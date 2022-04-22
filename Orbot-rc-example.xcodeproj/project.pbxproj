@@ -16,6 +16,8 @@
 
 /* Begin PBXFileReference section */
 		A009F07E2812D66200A04480 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = SOURCE_ROOT; };
+		A009F07F2812D9F300A04480 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		A009F0802812D9F300A04480 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		A0C53041280EF9080067597F /* Orbot-rc-example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Orbot-rc-example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A0C53044280EF9080067597F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A0C53048280EF9080067597F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -39,6 +41,8 @@
 		A0C53038280EF9080067597F = {
 			isa = PBXGroup;
 			children = (
+				A009F0802812D9F300A04480 /* LICENSE */,
+				A009F07F2812D9F300A04480 /* README.md */,
 				A009F07E2812D66200A04480 /* .gitignore */,
 				A0C53043280EF9080067597F /* Orbot-rc-example */,
 				A0C53042280EF9080067597F /* Products */,
