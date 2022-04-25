@@ -21,6 +21,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     private var uiUrlType = UiUrlType.orbotScheme
 
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        config.urlCache = nil
+
+        return URLSession(configuration: config)
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -30,7 +38,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: UITableViewDataSource
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        8
+        10
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -61,6 +69,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         case 7:
             cell.textLabel?.text = "Query Status"
+
+        case 8:
+            cell.textLabel?.text = "Query circuit(s) for torproject.org"
+
+        case 9:
+            cell.textLabel?.text = "Query circuit for 2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion"
 
         default:
             cell.textLabel?.text = "You should not see this!"
@@ -97,6 +111,26 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         case 7:
             query(url(for: "status"))
+
+        case 8:
+            let task = session.dataTask(with: URL(string: "https://torproject.org")!) { data, response, error in
+                if let error = error {
+                    return self.show(error.localizedDescription)
+                }
+
+                self.query(self.url(for: "circuits", arguments: ["host": "torproject.org"]))
+            }
+            task.resume()
+
+        case 9:
+            let task = session.dataTask(with: URL(string: "http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion")!) { data, response, error in
+                if let error = error {
+                    return self.show(error.localizedDescription)
+                }
+
+                self.query(self.url(for: "circuits", arguments: ["host": "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion"]))
+            }
+            task.resume()
 
         default:
             break
@@ -181,12 +215,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     private func query(_ url: URL) {
         let request = URLRequest(url: url)
 
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = session.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
                 return self.show(error?.localizedDescription ?? "No data")
             }
 
             let content = String(data: data, encoding: .utf8)
+
+            if let content = content {
+                print(content)
+            }
 
             let response = response as? HTTPURLResponse
 
@@ -196,12 +234,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         task.resume()
     }
 
-    private func url(for command: String...) -> URL {
+    private func url(for command: String..., arguments: [String: String]? = nil) -> URL {
         var urlc = URLComponents()
         urlc.scheme = "http"
         urlc.host = "localhost"
         urlc.port = 15182
         urlc.path = "/\(command.joined(separator: "/"))"
+
+        urlc.queryItems = arguments?.map { URLQueryItem(name: $0, value: $1) }
 
         print(urlc.url!)
 
