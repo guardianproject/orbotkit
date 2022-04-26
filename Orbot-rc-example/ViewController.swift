@@ -9,25 +9,12 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    enum UiUrlType {
-        case orbotScheme
-
-        case universalLink
-    }
-
     @IBOutlet weak var tableView: UITableView?
 
     private static let cellReuseId = "cell-reuse-id"
 
-    private var uiUrlType = UiUrlType.orbotScheme
 
-    private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
-        config.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        config.urlCache = nil
-
-        return URLSession(configuration: config)
-    }()
+    private var lastCircuits = [TorCircuit]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,7 +25,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: UITableViewDataSource
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        10
+        11
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -76,6 +63,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         case 9:
             cell.textLabel?.text = "Query circuit for 2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion"
 
+        case 10:
+            cell.textLabel?.text = "Close last queried circuits"
+
         default:
             cell.textLabel?.text = "You should not see this!"
         }
@@ -89,48 +79,125 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            testExistance()
+            show("Orbot is\(OrbotKit.shared.installed ? "" : " not") installed.")
 
         case 1:
-            open(ui(for: "show"))
+            OrbotKit.shared.open(.show) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 2:
-            open(ui(for: "start"))
+            OrbotKit.shared.open(.start) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 3:
-            open(ui(for: "show/settings"))
+            OrbotKit.shared.open(.showSettings) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 4:
-            open(ui(for: "show/bridges"))
+            OrbotKit.shared.open(.showBridges) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 5:
-            open(ui(for: "show/auth"))
+            OrbotKit.shared.open(.showAuth) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 6:
-            open(ui(for: "add/auth", arguments: ["url": "http://example23472834zasd.onion","key": "12345678examplekey12345678"]))
+            OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678")) { success in
+                if !success {
+                    self.show("Link could not be opened!", "Error")
+                }
+            }
 
         case 7:
-            query(url(for: "status"))
+            OrbotKit.shared.info { info, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print(error)
+
+                        return self.show(error.localizedDescription, "Error")
+                    }
+
+                    self.show(info.debugDescription)
+                }
+            }
 
         case 8:
-            let task = session.dataTask(with: URL(string: "https://torproject.org")!) { data, response, error in
+            let task = OrbotKit.shared.session.dataTask(with: URL(string: "https://torproject.org")!) { data, response, error in
                 if let error = error {
-                    return self.show(error.localizedDescription)
+                    return self.show(error.localizedDescription, "Error")
                 }
 
-                self.query(self.url(for: "circuits", arguments: ["host": "torproject.org"]))
+                OrbotKit.shared.circuits(host: "torproject.org") { circuits, error in
+                    if let error = error {
+                        return self.show(error.localizedDescription, "Error")
+                    }
+
+                    self.lastCircuits = circuits ?? []
+
+                    self.show(self.lastCircuits.debugDescription)
+                }
             }
             task.resume()
 
         case 9:
-            let task = session.dataTask(with: URL(string: "http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion")!) { data, response, error in
+            let task = OrbotKit.shared.session.dataTask(with: URL(string: "http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion")!)
+            { data, response, error in
                 if let error = error {
-                    return self.show(error.localizedDescription)
+                    return self.show(error.localizedDescription, "Error")
                 }
 
-                self.query(self.url(for: "circuits", arguments: ["host": "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion"]))
+                OrbotKit.shared.circuits(host: "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion") { circuits, error in
+                    if let error = error {
+                        return self.show(error.localizedDescription, "Error")
+                    }
+
+                    self.lastCircuits = circuits ?? []
+
+                    self.show(self.lastCircuits.debugDescription)
+                }
             }
             task.resume()
+
+        case 10:
+            let group = DispatchGroup()
+            var results = [String]()
+
+            guard !lastCircuits.isEmpty else {
+                return show("No circuits to close, yet. Query some, first!", "Error")
+            }
+
+            for circuit in lastCircuits {
+                guard let id = circuit.circuitId, !id.isEmpty else {
+                    continue
+                }
+
+                group.enter()
+
+                OrbotKit.shared.closeCircuit(id: id) { success, error in
+                    results.append("Circuit \(id): \(error?.localizedDescription ?? (success ? "success" : "failure"))")
+
+                    group.leave()
+                }
+            }
+
+            group.wait()
+
+            show(results.joined(separator: "\n\n"))
 
         default:
             break
@@ -143,13 +210,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: Actions
 
     @IBAction func toggleUrlType(_ item: UIBarButtonItem) {
-        switch uiUrlType {
+        switch OrbotKit.shared.uiUrlType {
         case .orbotScheme:
-            uiUrlType = .universalLink
+            OrbotKit.shared.uiUrlType = .universalLink(noWeb: true)
             item.image = UIImage(systemName: "network")
 
         case .universalLink:
-            uiUrlType = .orbotScheme
+            OrbotKit.shared.uiUrlType = .orbotScheme
             item.image = UIImage(systemName: "iphone")
         }
     }
@@ -165,86 +232,5 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
             self.present(alert, animated: true)
         }
-    }
-
-
-    // MARK: Private Methods
-
-    /**
-     IMPORTANT: You will need to register the `orbot` scheme in your Info.plist
-     file under `LSApplicationQueriesSchemes` for this to evaluate to `true`!
-
-     NOTE: You will always need to use the `orbot` scheme for this to work, as the `https` scheme of course
-     can always be opened and there is no way to test, if an app to handle the `orbot.app` domain is installed.
-
-     Of course, there is a slight risk, that another app registered that scheme.
-
-     So, to make sure you only talk to Orbot, use the universal link URL (https://orbot.app/rc/) instead for all other calls!
-     */
-    private func testExistance() {
-        let result = UIApplication.shared.canOpenURL(URL(string: "orbot:show")!)
-
-        show("Orbot is\(result ? "" : " not") installed.")
-    }
-
-    private func open(_ url: URL) {
-        UIApplication.shared.open(url)
-    }
-
-    private func ui(for command: String, arguments: [String: String]? = nil) -> URL {
-        var urlc = URLComponents()
-
-        switch uiUrlType {
-        case .orbotScheme:
-            urlc.scheme = "orbot"
-            urlc.path = command
-
-        case .universalLink:
-            urlc.scheme = "https"
-            urlc.host = "orbot.app"
-            urlc.path = "/rc/\(command)"
-        }
-
-        urlc.queryItems = arguments?.map { URLQueryItem(name: $0, value: $1) }
-
-        print(urlc.url!)
-
-        return urlc.url!
-    }
-
-    private func query(_ url: URL) {
-        let request = URLRequest(url: url)
-
-        let task = session.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                return self.show(error?.localizedDescription ?? "No data")
-            }
-
-            let content = String(data: data, encoding: .utf8)
-
-            if let content = content {
-                print(content)
-            }
-
-            let response = response as? HTTPURLResponse
-
-            self.show(content ?? "(nil)", "Result: \(response?.statusCode ?? -1)")
-        }
-
-        task.resume()
-    }
-
-    private func url(for command: String..., arguments: [String: String]? = nil) -> URL {
-        var urlc = URLComponents()
-        urlc.scheme = "http"
-        urlc.host = "localhost"
-        urlc.port = 15182
-        urlc.path = "/\(command.joined(separator: "/"))"
-
-        urlc.queryItems = arguments?.map { URLQueryItem(name: $0, value: $1) }
-
-        print(urlc.url!)
-
-        return urlc.url!
     }
 }

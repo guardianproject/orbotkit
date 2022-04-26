@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A08092E42816D24E0037F481 /* OrbotKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A08092E32816D24E0037F481 /* OrbotKit.swift */; };
 		A0C53045280EF9080067597F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0C53044280EF9080067597F /* AppDelegate.swift */; };
 		A0C53049280EF9080067597F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0C53048280EF9080067597F /* ViewController.swift */; };
 		A0C5304C280EF9080067597F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A0C5304A280EF9080067597F /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 		A009F07E2812D66200A04480 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = SOURCE_ROOT; };
 		A009F07F2812D9F300A04480 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		A009F0802812D9F300A04480 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		A08092E32816D24E0037F481 /* OrbotKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbotKit.swift; sourceTree = "<group>"; };
 		A0C53041280EF9080067597F /* Orbot-rc-example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Orbot-rc-example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A0C53044280EF9080067597F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A0C53048280EF9080067597F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 			children = (
 				A0C53044280EF9080067597F /* AppDelegate.swift */,
 				A0C53048280EF9080067597F /* ViewController.swift */,
+				A08092E32816D24E0037F481 /* OrbotKit.swift */,
 				A0C5304A280EF9080067597F /* Main.storyboard */,
 				A0C5304D280EF9080067597F /* Assets.xcassets */,
 				A0C5304F280EF9080067597F /* LaunchScreen.storyboard */,
@@ -141,6 +144,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A08092E42816D24E0037F481 /* OrbotKit.swift in Sources */,
 				A0C53049280EF9080067597F /* ViewController.swift in Sources */,
 				A0C53045280EF9080067597F /* AppDelegate.swift in Sources */,
 			);
