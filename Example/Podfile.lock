@@ -1,0 +1,16 @@
+PODS:
+  - OrbotKit (0.1.0)
+
+DEPENDENCIES:
+  - OrbotKit (from `../`)
+
+EXTERNAL SOURCES:
+  OrbotKit:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  OrbotKit: 512fd342b9fc95d603684442ff07b8043bb6142f
+
+PODFILE CHECKSUM: 061452afa1fb63a94b41e1148eacc3ecbff9d94e
+
+COCOAPODS: 1.11.3

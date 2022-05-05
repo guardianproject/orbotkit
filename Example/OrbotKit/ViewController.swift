@@ -1,11 +1,13 @@
 //
 //  ViewController.swift
-//  Orbot-rc-example
+//  OrbotKit
 //
-//  Created by Benjamin Erhart on 19.04.22.
+//  Created by Benjamin Erhart on 05/05/2022.
+//  Copyright (c) 2022 Guardian Project. All rights reserved.
 //
 
 import UIKit
+import OrbotKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 

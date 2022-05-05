@@ -448,7 +448,7 @@ open class OrbotKit {
  */
 public struct Info: Codable {
 
-    enum Status: String, Codable {
+    public enum Status: String, Codable {
         case stopped = "stopped"
         case starting = "starting"
         case started = "started"
@@ -457,22 +457,22 @@ public struct Info: Codable {
     /**
      The current status of the Orbot Tor VPN.
      */
-    let status: Status
+    public let status: Status
 
     /**
      The name of the network extension. (Should be "Tor VPN".)
      */
-    let name: String?
+    public let name: String?
 
     /**
      The current semantic version of Orbot.
      */
-    let version: String?
+    public let version: String?
 
     /**
      The build ID of Orbot.
      */
-    let build: String?
+    public let build: String?
 }
 
 /**
@@ -483,72 +483,72 @@ public struct TorCircuit: Codable {
     /**
      The raw data this object is constructed from.
      */
-    let raw: String?
+    public let raw: String?
 
     /**
     The circuit ID. Currently only numbers beginning with "1" but Tor spec says, that could change.
      */
-    let circuitId: String?
+    public let circuitId: String?
 
     /**
      The circuit status. Typically "BUILT".
      */
-    let status: String?
+    public let status: String?
 
     /**
      The circuit path as a list of ``TorNode`` objects.
      */
-    let nodes: [TorNode]?
+    public let nodes: [TorNode]?
 
     /**
      Build flags of the circuit.
     */
-    let buildFlags: [String]?
+    public let buildFlags: [String]?
 
     /**
      Circuit purpose. Should be one of "GENERAL", "HS_CLIENT_REND" or "HS_SERVICE_REND".
      All others should get filtered.
      */
-    let purpose: String?
+    public let purpose: String?
 
     /**
      Circuit hidden service state.
      */
-    let hsState: String?
+    public let hsState: String?
 
     /**
      The rendevouz query.
 
      Should be equal the onion address this circuit was used for minus the `.onion` postfix.
      */
-    let rendQuery: String?
+    public let rendQuery: String?
 
     /**
      The circuit's  timestamp at which the circuit was created or cannibalized.
      */
-    let timeCreated: Date?
+    public let timeCreated: Date?
 
     /**
      The reason for failed or closed circuits. This should always be empty.
      */
-    let reason: String?
+    public let reason: String?
 
     /**
      The remoteReason for failed or closed circuits. This should always be empty.
      */
-    let remoteReason: String?
+    public let remoteReason: String?
 
     /**
      The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
      SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
      */
-    let socksUsername: String?
+    public let socksUsername: String?
 
     /**
      The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
      SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
      */
-    let socksPassword: String?
+    public let socksPassword: String?
 }
 
 /**
@@ -559,30 +559,30 @@ public struct TorNode: Codable {
     /**
      The fingerprint aka. ID of a Tor node.
      */
-    let fingerprint: String?
+    public let fingerprint: String?
 
     /**
      The nickname of a Tor node.
      */
-    let nickName: String?
+    public let nickName: String?
 
     /**
      The IPv4 address of a Tor node.
      */
-    let ipv4Address: String?
+    public let ipv4Address: String?
 
     /**
      The IPv6 address of a Tor node.
      */
-    let ipv6Address: String?
+    public let ipv6Address: String?
 
     /**
      The country code of a Tor node's country.
      */
-    let countryCode: String
+    public let countryCode: String
 
     /**
      The localized country name of a Tor node's country.
      */
-    let localizedCountryName: String?
+    public let localizedCountryName: String?
 }
