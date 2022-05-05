@@ -9,7 +9,7 @@
 import UIKit
 import OrbotKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, OrbotDeathListener {
 
     @IBOutlet weak var tableView: UITableView?
 
@@ -27,7 +27,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // MARK: UITableViewDataSource
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        11
+        12
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -67,6 +67,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         case 10:
             cell.textLabel?.text = "Close last queried circuits"
+
+        case 11:
+            cell.textLabel?.text = "Notify on death"
 
         default:
             cell.textLabel?.text = "You should not see this!"
@@ -201,11 +204,36 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
             show(results.joined(separator: "\n\n"))
 
+        case 11:
+            let cell = tableView.cellForRow(at: indexPath)
+
+            if cell?.accessoryType == .checkmark {
+                cell?.accessoryType = .none
+
+                OrbotKit.shared.removeDeathListener(self)
+            }
+            else {
+                cell?.accessoryType = .checkmark
+
+                OrbotKit.shared.notifyOnDeath(self)
+            }
+
         default:
             break
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+
+    // MARK: OrbotDeathListener
+
+    func died() {
+        DispatchQueue.main.async {
+            self.tableView?.cellForRow(at: IndexPath(row: 11, section: 0))?.accessoryType = .none
+        }
+
+        show("Dead!")
     }
 
 

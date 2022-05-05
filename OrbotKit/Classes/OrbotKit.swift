@@ -7,6 +7,11 @@
 
 import UIKit
 
+public protocol OrbotDeathListener: AnyObject {
+
+    func died()
+}
+
 /**
  SDK for interacting with [Orbot iOS](https://orbot.app/).
 
@@ -164,6 +169,7 @@ open class OrbotKit {
         case getInfo
         case getCircuits(host: String?)
         case closeCircuit(id: String)
+        case poll(length: UInt32)
 
         public var request: URLRequest? {
             var method = "GET"
@@ -187,6 +193,10 @@ open class OrbotKit {
             case .closeCircuit(let id):
                 urlc.path = "/circuits/\(id)"
                 method = "DELETE"
+
+            case .poll(let length):
+                urlc.path = "/poll/"
+                urlc.queryItems = [URLQueryItem(name: "length", value: String(length))]
             }
 
             guard let url = urlc.url else {
@@ -391,6 +401,93 @@ open class OrbotKit {
         closeCircuit(id: id, completion)
     }
 
+    private var deathListeners = [() -> OrbotDeathListener?]()
+    private var pollTask: URLSessionDataTask?
+
+    /**
+     Informs the given listener, when the Orbot VPN died.
+
+     You can call this as often as you like. OrbotKit will collect all listeners and inform all of them until
+     the Orbot VPN dies (in which case all listeners are removed) or the listeners are removed again by you.
+     (See ``removeDeathListener(_:)``.)
+
+     This is achieved by long-polling a special endpoint which does nothing but wait a given amount of time
+     (or 20 seconds as default) and return 204 OK after that time.
+
+     This is repeated until the request returns with an error, times out
+     or there are no more listeners.
+
+     *NOTE*: Only call this after ``info(_:)`` returned a status which is not `.stopped`. Otherwise
+     your listener will be called immediately and removed again.
+
+     - parameter listener: A listener object which gets informed, when the Orbot VPN died.
+     */
+    open func notifyOnDeath(_ listener: OrbotDeathListener) {
+        deathListeners.append({ [weak listener] in listener })
+
+        // A background process was already started.
+        if pollTask != nil {
+            return
+        }
+
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            let group = DispatchGroup()
+
+            var dead = false
+
+            repeat {
+                guard let timeout = self?.session.configuration.timeoutIntervalForRequest else {
+                    break
+                }
+
+                group.enter()
+
+                self?.pollTask = self?.request(.poll(length: UInt32(timeout - 1))) {
+                    (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
+
+                    dead = error != nil
+
+                    group.leave()
+                }
+
+                // Should not happen, but just to be extra safe.
+                if self?.pollTask == nil {
+                    group.leave()
+                }
+
+                if group.wait(timeout: .now() + timeout) == .timedOut {
+                    dead = true
+                }
+            }
+            while !dead && !(self?.deathListeners.isEmpty ?? true)
+
+            self?.deathListeners.forEach { $0()?.died() }
+            self?.deathListeners.removeAll()
+
+            self?.pollTask = nil
+        }
+    }
+
+    /**
+     Removes a specific listener or all of them (with no/`nil` argument).
+
+     If no listeners are left, the long-polling request will be cancelled, too.
+
+     - parameter listener: An object which was listening for Orbot VPN's death.
+     */
+    open func removeDeathListener(_ listener: OrbotDeathListener? = nil) {
+        if listener == nil {
+            deathListeners.removeAll()
+        }
+        else {
+            deathListeners.removeAll { $0() === listener }
+        }
+
+        if deathListeners.isEmpty {
+            pollTask?.cancel()
+        }
+    }
+
 
     // MARK: Private Methods
 
@@ -400,13 +497,14 @@ open class OrbotKit {
      - parameter endpoint: The endpoint to query.
      - parameter completion: Returns the expected value or  an `Error` object, never both. This block is executed on the `session.delegateQueue`.
      */
-    private func request<T: Decodable>(_ endpoint: RestEndpoint, _ completion: @escaping (T?, Error?) -> Void) {
+    @discardableResult
+    private func request<T: Decodable>(_ endpoint: RestEndpoint, _ completion: @escaping (T?, Error?) -> Void) -> URLSessionDataTask? {
         guard let request = endpoint.request else {
             session.delegateQueue.addOperation {
                 completion(nil, Errors.internalError)
             }
 
-            return
+            return nil
         }
 
         let task = session.dataTask(with: request) { data, response, error in
@@ -440,6 +538,8 @@ open class OrbotKit {
         }
 
         task.resume()
+
+        return task
     }
 }
 
