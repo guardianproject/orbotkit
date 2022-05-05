@@ -25,7 +25,7 @@ open class OrbotKit {
     public enum UiUrlType {
 
         /**
-         Use  `orbot:` scheme URLs. Always works, but subject to scheme hijacking. (Another app then Orbot can register that scheme, too.)
+         Use  `orbot:` scheme URLs. Always works, but subject to scheme hijacking. (Another app than Orbot can register that scheme, too.)
          */
         case orbotScheme
 
@@ -45,16 +45,22 @@ open class OrbotKit {
 
         /**
          This error is used when Orbot answered with an HTTP status code outside the 200 range.
-
-         Please note: This SDK should not but could return 418 ("I'm a teapot") under conditions where things become `nil` when they shouldn't
-         or don't cast to objects to which they should.
          */
         case httpError(statusCode: Int)
+
+        /**
+         This SDK should not but could throw this error under conditions where things become `nil` when they shouldn't
+         or don't cast to objects to which they should.
+         */
+        case internalError
 
         public var errorDescription: String? {
             switch self {
             case .httpError(let statusCode):
                 return "\(statusCode) \(HTTPURLResponse.localizedString(forStatusCode: statusCode))"
+
+            case .internalError:
+                return "OrbotKit internal error"
             }
         }
     }
@@ -73,7 +79,7 @@ open class OrbotKit {
          Start the Network Extension, if not yet started.
 
          Note: The user has to have it installed, first.
-         Don't assume, that the Tor VPN is available after you called this.
+         Don't assume, that the Tor VPN is (immediately) available after you called this.
          Use ``status(_:)`` to test, if Tor is running.
          */
         case start
@@ -298,7 +304,7 @@ open class OrbotKit {
      - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
     open func info(_ completion: @escaping (_ info: Info?, _ error: Error?) -> Void) {
-        query(.getInfo) { (info: Info?, error: Error?) in
+        request(.getInfo) { (info: Info?, error: Error?) in
             var info = info
             var error = error
 
@@ -332,7 +338,7 @@ open class OrbotKit {
      - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
     open func circuits(host: String? = nil, _ completion: @escaping (_ circuits: [TorCircuit]?, _ error: Error?) -> Void) {
-        query(.getCircuits(host: host), completion)
+        request(.getCircuits(host: host), completion)
     }
 
     /**
@@ -349,7 +355,7 @@ open class OrbotKit {
      - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
     open func closeCircuit(id: String, _ completion: @escaping (_ success: Bool, _ error: Error?) -> Void) {
-        query(.closeCircuit(id: id)) { (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
+        request(.closeCircuit(id: id)) { (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
             if let error = error {
                 return completion(false, error)
             }
@@ -394,10 +400,10 @@ open class OrbotKit {
      - parameter endpoint: The endpoint to query.
      - parameter completion: Returns the expected value or  an `Error` object, never both. This block is executed on the `session.delegateQueue`.
      */
-    private func query<T: Decodable>(_ endpoint: RestEndpoint, _ completion: @escaping (T?, Error?) -> Void) {
+    private func request<T: Decodable>(_ endpoint: RestEndpoint, _ completion: @escaping (T?, Error?) -> Void) {
         guard let request = endpoint.request else {
             session.delegateQueue.addOperation {
-                completion(nil, Errors.httpError(statusCode: 418))
+                completion(nil, Errors.internalError)
             }
 
             return
@@ -408,7 +414,9 @@ open class OrbotKit {
                 return completion(nil, error)
             }
 
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 418
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+                return completion(nil, Errors.internalError)
+            }
 
             if statusCode < 200 || statusCode >= 300 {
                 return completion(nil, Errors.httpError(statusCode: statusCode))
