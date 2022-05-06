@@ -18,4 +18,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         return true
     }
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool
+    {
+        guard let urlc = URLComponents(url: url, resolvingAgainstBaseURL: true),
+              let navC = window?.rootViewController as? UINavigationController,
+              let vc = navC.viewControllers.first as? ViewController
+        else {
+            return false
+        }
+
+        switch urlc.path {
+        case "token-callback":
+            if let token = urlc.queryItems?.first(where: { $0.name == "token" })?.value {
+                vc.tokenAlert?.textFields?.first?.text = token
+            }
+
+            break
+
+        default:
+            return false
+        }
+
+        return true
+    }
 }
