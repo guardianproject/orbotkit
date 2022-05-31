@@ -1,0 +1,24 @@
+//
+//  Config.xcconfig
+//  OrbotKit
+//
+//  Created by Benjamin Erhart on 31.05.22.
+//  Copyright © 2022 Guardian Project. All rights reserved.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+// Avoid accidental checkins:
+// git update-index --skip-worktree Example/OrbotKit/Config.xcconfig
+// git update-index --no-skip-worktree Example/OrbotKit/Config.xcconfig
+
+PRODUCT_BUNDLE_IDENTIFIER[config=Debug] =
+DEVELOPMENT_TEAM[config=Debug] =
+CODE_SIGN_IDENTITY[config=Debug] =
+PROVISIONING_PROFILE_SPECIFIER[config=Debug] =
+
+PRODUCT_BUNDLE_IDENTIFIER[config=Release] =
+DEVELOPMENT_TEAM[config=Release] =
+CODE_SIGN_IDENTITY[config=Release] =
+PROVISIONING_PROFILE_SPECIFIER[config=Release] =
