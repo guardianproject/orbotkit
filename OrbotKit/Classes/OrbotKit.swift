@@ -365,7 +365,7 @@ open class OrbotKit {
 
             if let nsError = error as? NSError {
                 if nsError.code == -1004 /* "Could not connect to the server." */ {
-                    info = Info(status: .stopped, name: nil, version: nil, build: nil)
+                    info = Info(status: .stopped, name: nil, version: nil, build: nil, onionOnly: false)
                     error = nil
                 }
             }
@@ -615,6 +615,14 @@ public struct Info: Codable {
         case started = "started"
     }
 
+    public enum CodingKeys: String, CodingKey {
+        case status
+        case name
+        case version
+        case build
+        case onionOnly = "onion-only"
+    }
+
     /**
      The current status of the Orbot Tor VPN.
      */
@@ -634,6 +642,11 @@ public struct Info: Codable {
      The build ID of Orbot.
      */
     public let build: String?
+
+    /**
+     If Orbot is running in onion-only mode.
+     */
+    public let onionOnly: Bool
 }
 
 /**
