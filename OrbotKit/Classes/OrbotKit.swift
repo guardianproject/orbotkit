@@ -654,8 +654,21 @@ public struct Info: Codable, CustomStringConvertible {
 
     /**
      The SOCKS5 port with which Orbot can be bypassed, if activated.
+
+     Please note: This information will only be revealed, if you have an access token with that feature enabled.
      */
     public let bypassPort: UInt16?
+
+    /**
+     If Orbot is running and not in onion-only mode, your app will need to configure the use
+     of the SOCKS5 `bypassPort`.
+
+     However, if Orbot is *not* running or if Orbot *is* in onion-only mode, you shall not configure
+     the use of the proxy, because there's nobody going to be there to listen to your app!
+     */
+    public var needProxyConfiguredToBypass: Bool {
+        !onionOnly && status != .stopped
+    }
 
     public var description: String {
         "[\(String(describing: type(of: self))) status=\(status), name=\(name ?? "(nil)"), version=\(version ?? "(nil)"), build=\(build ?? "(nil)"), onionOnly=\(onionOnly), bypassPort=\(bypassPort?.description ?? "(nil)")]"
