@@ -368,7 +368,7 @@ open class OrbotKit {
 
             if let nsError = error as? NSError {
                 if nsError.code == -1004 /* "Could not connect to the server." */ {
-                    info = Info(status: .stopped, name: nil, version: nil, build: nil, onionOnly: false, bypassPort: nil)
+                    info = Info(status: .stopped)
                     error = nil
                 }
             }
@@ -672,6 +672,18 @@ public struct Info: Codable, CustomStringConvertible {
 
     public var description: String {
         "[\(String(describing: type(of: self))) status=\(status), name=\(name ?? "(nil)"), version=\(version ?? "(nil)"), build=\(build ?? "(nil)"), onionOnly=\(onionOnly), bypassPort=\(bypassPort?.description ?? "(nil)")]"
+    }
+
+    /**
+     Initializer to create a dummy object instead of real data from Orbot.
+     */
+    public init(status: Status) {
+        self.status = status
+        name = nil
+        version = nil
+        build = nil
+        onionOnly = false
+        bypassPort = nil
     }
 }
 
