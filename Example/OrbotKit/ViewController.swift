@@ -18,7 +18,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     var tokenAlert: UIAlertController?
 
-    private var lastCircuits = [TorCircuit]()
+    private var lastCircuits = [OrbotKit.TorCircuit]()
 
     override func viewDidLoad() {
         super.viewDidLoad()

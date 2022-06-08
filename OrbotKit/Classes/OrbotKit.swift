@@ -605,196 +605,196 @@ open class OrbotKit {
 
         return task
     }
-}
 
-/**
- Orbot VPN status and metadata.
- */
-public struct Info: Codable, CustomStringConvertible {
+    /**
+     Orbot VPN status and metadata.
+     */
+    public struct Info: Codable, CustomStringConvertible {
 
-    public enum Status: String, Codable {
-        case stopped = "stopped"
-        case starting = "starting"
-        case started = "started"
+        public enum Status: String, Codable {
+            case stopped = "stopped"
+            case starting = "starting"
+            case started = "started"
+        }
+
+        public enum CodingKeys: String, CodingKey {
+            case status
+            case name
+            case version
+            case build
+            case onionOnly = "onion-only"
+            case bypassPort = "bypass-port"
+        }
+
+        /**
+         The current status of the Orbot Tor VPN.
+         */
+        public let status: Status
+
+        /**
+         The name of the network extension. (Should be "Tor VPN".)
+         */
+        public let name: String?
+
+        /**
+         The current semantic version of Orbot.
+         */
+        public let version: String?
+
+        /**
+         The build ID of Orbot.
+         */
+        public let build: String?
+
+        /**
+         If Orbot is running in onion-only mode.
+         */
+        public let onionOnly: Bool
+
+        /**
+         The SOCKS5 port with which Orbot can be bypassed, if activated.
+
+         Please note: This information will only be revealed, if you have an access token with that feature enabled.
+         */
+        public let bypassPort: UInt16?
+
+        /**
+         If Orbot is running and not in onion-only mode, your app will need to configure the use
+         of the SOCKS5 `bypassPort`.
+
+         However, if Orbot is *not* running or if Orbot *is* in onion-only mode, you shall not configure
+         the use of the proxy, because there's nobody going to be there to listen to your app!
+         */
+        public var needProxyConfiguredToBypass: Bool {
+            !onionOnly && status != .stopped
+        }
+
+        public var description: String {
+            "[\(String(describing: type(of: self))) status=\(status), name=\(name ?? "(nil)"), version=\(version ?? "(nil)"), build=\(build ?? "(nil)"), onionOnly=\(onionOnly), bypassPort=\(bypassPort?.description ?? "(nil)")]"
+        }
+
+        /**
+         Initializer to create a dummy object instead of real data from Orbot.
+         */
+        public init(status: Status) {
+            self.status = status
+            name = nil
+            version = nil
+            build = nil
+            onionOnly = false
+            bypassPort = nil
+        }
     }
 
-    public enum CodingKeys: String, CodingKey {
-        case status
-        case name
-        case version
-        case build
-        case onionOnly = "onion-only"
-        case bypassPort = "bypass-port"
+    /**
+     Tor circuit metadata.
+     */
+    public struct TorCircuit: Codable {
+
+        /**
+         The raw data this object is constructed from.
+         */
+        public let raw: String?
+
+        /**
+        The circuit ID. Currently only numbers beginning with "1" but Tor spec says, that could change.
+         */
+        public let circuitId: String?
+
+        /**
+         The circuit status. Typically "BUILT".
+         */
+        public let status: String?
+
+        /**
+         The circuit path as a list of ``TorNode`` objects.
+         */
+        public let nodes: [TorNode]?
+
+        /**
+         Build flags of the circuit.
+        */
+        public let buildFlags: [String]?
+
+        /**
+         Circuit purpose. Should be one of "GENERAL", "HS_CLIENT_REND" or "HS_SERVICE_REND".
+         All others should get filtered.
+         */
+        public let purpose: String?
+
+        /**
+         Circuit hidden service state.
+         */
+        public let hsState: String?
+
+        /**
+         The rendevouz query.
+
+         Should be equal the onion address this circuit was used for minus the `.onion` postfix.
+         */
+        public let rendQuery: String?
+
+        /**
+         The circuit's  timestamp at which the circuit was created or cannibalized.
+         */
+        public let timeCreated: Date?
+
+        /**
+         The reason for failed or closed circuits. This should always be empty.
+         */
+        public let reason: String?
+
+        /**
+         The remoteReason for failed or closed circuits. This should always be empty.
+         */
+        public let remoteReason: String?
+
+        /**
+         The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
+         SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
+         */
+        public let socksUsername: String?
+
+        /**
+         The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
+         SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
+         */
+        public let socksPassword: String?
     }
 
     /**
-     The current status of the Orbot Tor VPN.
+     Tor node metadata.
      */
-    public let status: Status
+    public struct TorNode: Codable {
 
-    /**
-     The name of the network extension. (Should be "Tor VPN".)
-     */
-    public let name: String?
+        /**
+         The fingerprint aka. ID of a Tor node.
+         */
+        public let fingerprint: String?
 
-    /**
-     The current semantic version of Orbot.
-     */
-    public let version: String?
+        /**
+         The nickname of a Tor node.
+         */
+        public let nickName: String?
 
-    /**
-     The build ID of Orbot.
-     */
-    public let build: String?
+        /**
+         The IPv4 address of a Tor node.
+         */
+        public let ipv4Address: String?
 
-    /**
-     If Orbot is running in onion-only mode.
-     */
-    public let onionOnly: Bool
+        /**
+         The IPv6 address of a Tor node.
+         */
+        public let ipv6Address: String?
 
-    /**
-     The SOCKS5 port with which Orbot can be bypassed, if activated.
+        /**
+         The country code of a Tor node's country.
+         */
+        public let countryCode: String
 
-     Please note: This information will only be revealed, if you have an access token with that feature enabled.
-     */
-    public let bypassPort: UInt16?
-
-    /**
-     If Orbot is running and not in onion-only mode, your app will need to configure the use
-     of the SOCKS5 `bypassPort`.
-
-     However, if Orbot is *not* running or if Orbot *is* in onion-only mode, you shall not configure
-     the use of the proxy, because there's nobody going to be there to listen to your app!
-     */
-    public var needProxyConfiguredToBypass: Bool {
-        !onionOnly && status != .stopped
+        /**
+         The localized country name of a Tor node's country.
+         */
+        public let localizedCountryName: String?
     }
-
-    public var description: String {
-        "[\(String(describing: type(of: self))) status=\(status), name=\(name ?? "(nil)"), version=\(version ?? "(nil)"), build=\(build ?? "(nil)"), onionOnly=\(onionOnly), bypassPort=\(bypassPort?.description ?? "(nil)")]"
-    }
-
-    /**
-     Initializer to create a dummy object instead of real data from Orbot.
-     */
-    public init(status: Status) {
-        self.status = status
-        name = nil
-        version = nil
-        build = nil
-        onionOnly = false
-        bypassPort = nil
-    }
-}
-
-/**
- Tor circuit metadata.
- */
-public struct TorCircuit: Codable {
-
-    /**
-     The raw data this object is constructed from.
-     */
-    public let raw: String?
-
-    /**
-    The circuit ID. Currently only numbers beginning with "1" but Tor spec says, that could change.
-     */
-    public let circuitId: String?
-
-    /**
-     The circuit status. Typically "BUILT".
-     */
-    public let status: String?
-
-    /**
-     The circuit path as a list of ``TorNode`` objects.
-     */
-    public let nodes: [TorNode]?
-
-    /**
-     Build flags of the circuit.
-    */
-    public let buildFlags: [String]?
-
-    /**
-     Circuit purpose. Should be one of "GENERAL", "HS_CLIENT_REND" or "HS_SERVICE_REND".
-     All others should get filtered.
-     */
-    public let purpose: String?
-
-    /**
-     Circuit hidden service state.
-     */
-    public let hsState: String?
-
-    /**
-     The rendevouz query.
-
-     Should be equal the onion address this circuit was used for minus the `.onion` postfix.
-     */
-    public let rendQuery: String?
-
-    /**
-     The circuit's  timestamp at which the circuit was created or cannibalized.
-     */
-    public let timeCreated: Date?
-
-    /**
-     The reason for failed or closed circuits. This should always be empty.
-     */
-    public let reason: String?
-
-    /**
-     The remoteReason for failed or closed circuits. This should always be empty.
-     */
-    public let remoteReason: String?
-
-    /**
-     The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
-     SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
-     */
-    public let socksUsername: String?
-
-    /**
-     The ``socksUsername`` and ``socksPassword`` fields indicate the credentials that were used by a
-     SOCKS client to connect to Tor’s SOCKS port and initiate this circuit.
-     */
-    public let socksPassword: String?
-}
-
-/**
- Tor node metadata.
- */
-public struct TorNode: Codable {
-
-    /**
-     The fingerprint aka. ID of a Tor node.
-     */
-    public let fingerprint: String?
-
-    /**
-     The nickname of a Tor node.
-     */
-    public let nickName: String?
-
-    /**
-     The IPv4 address of a Tor node.
-     */
-    public let ipv4Address: String?
-
-    /**
-     The IPv6 address of a Tor node.
-     */
-    public let ipv6Address: String?
-
-    /**
-     The country code of a Tor node's country.
-     */
-    public let countryCode: String
-
-    /**
-     The localized country name of a Tor node's country.
-     */
-    public let localizedCountryName: String?
 }
