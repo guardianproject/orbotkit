@@ -127,10 +127,11 @@ open class OrbotKit {
 
          Have a look at the example app of this library on how to implement the scheme handler.
 
+         - parameter needBypass: Set `true` if your app needs to bypass Orbot. (E.g. because it runs its own Tor for advanced usage.)
          - parameter callback: An optional callback URL pointing to a scheme and path your app can handle.
          You will receive the token in a `token` query parameter.
          */
-        case requestApiToken(callback: URL?)
+        case requestApiToken(needBypass: Bool = false, callback: URL? = nil)
 
         /**
          Generate an Orbot UI URL for the given ``UiUrlType`` and arguments.
@@ -163,9 +164,11 @@ open class OrbotKit {
                 urlc.queryItems = [URLQueryItem(name: "url", value: url),
                                    URLQueryItem(name: "key", value: key)]
 
-            case .requestApiToken(let callback):
+            case .requestApiToken(let needBypass, let callback):
                 path = "request/token"
-                urlc.queryItems = [URLQueryItem(name: "appId", value: Bundle.main.bundleIdentifier)]
+                urlc.queryItems = [
+                    URLQueryItem(name: "app-id", value: Bundle.main.bundleIdentifier),
+                    URLQueryItem(name: "need-bypass", value: String(needBypass))]
 
                 if let callback = callback {
                     urlc.queryItems?.append(URLQueryItem(name: "callback", value: callback.absoluteString))
@@ -365,7 +368,7 @@ open class OrbotKit {
 
             if let nsError = error as? NSError {
                 if nsError.code == -1004 /* "Could not connect to the server." */ {
-                    info = Info(status: .stopped, name: nil, version: nil, build: nil, onionOnly: false)
+                    info = Info(status: .stopped, name: nil, version: nil, build: nil, onionOnly: false, bypassPort: nil)
                     error = nil
                 }
             }
@@ -607,7 +610,7 @@ open class OrbotKit {
 /**
  Orbot VPN status and metadata.
  */
-public struct Info: Codable {
+public struct Info: Codable, CustomStringConvertible {
 
     public enum Status: String, Codable {
         case stopped = "stopped"
@@ -621,6 +624,7 @@ public struct Info: Codable {
         case version
         case build
         case onionOnly = "onion-only"
+        case bypassPort = "bypass-port"
     }
 
     /**
@@ -647,6 +651,15 @@ public struct Info: Codable {
      If Orbot is running in onion-only mode.
      */
     public let onionOnly: Bool
+
+    /**
+     The SOCKS5 port with which Orbot can be bypassed, if activated.
+     */
+    public let bypassPort: UInt16?
+
+    public var description: String {
+        "[\(String(describing: type(of: self))) status=\(status), name=\(name ?? "(nil)"), version=\(version ?? "(nil)"), build=\(build ?? "(nil)"), onionOnly=\(onionOnly), bypassPort=\(bypassPort?.description ?? "(nil)")]"
+    }
 }
 
 /**

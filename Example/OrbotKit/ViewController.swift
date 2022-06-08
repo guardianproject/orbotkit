@@ -176,7 +176,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
 
             default:
-                OrbotKit.shared.open(.requestApiToken(callback: URL(string: "orbotkit-example:token-callback"))) { success in
+                OrbotKit.shared.open(.requestApiToken(needBypass: true, callback: URL(string: "orbotkit-example:token-callback"))) { success in
                     if !success {
                         return self.show("Link could not be opened!", "Error")
                     }
