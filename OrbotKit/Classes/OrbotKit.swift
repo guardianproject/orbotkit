@@ -7,9 +7,33 @@
 
 import UIKit
 
-public protocol OrbotDeathListener: AnyObject {
+/**
+ Protocol for ``OrbotKit.notifyOnStatusChanges(_:)`` listeners.
+ */
+public protocol OrbotStatusChangeListener: AnyObject {
 
-    func died(error: Error)
+    /**
+     Will be called *on a background thread*, when the status of Orbot changes...
+     - either from ``OrbotKit.Info.Status.stopped`` to  ``OrbotKit.Info.Status.starting``
+     - or from ``OrbotKit.Info.Status.starting`` or ``OrbotKit.Info.Status.started``  to ``OrbotKit.Info.Status.stopped``.
+
+     Implementation weaknesses:
+     - Will currently **not** send an update when status changes from
+     ``OrbotKit.Info.Status.starting`` to ``OrbotKit.Info.Status.started``.
+     - Might move directly from ``OrbotKit.Info.Status.stopped`` to ``OrbotKit.Info.Status.started``
+        if Tor is quick enough. (Potential race condition)
+
+     So, you should treat `.starting` and `.started` alike! If you need to make a difference there, you will need to
+     poll ``OrbotKit.info(_:)`` yourself!
+     */
+    func orbotStatusChanged(info: OrbotKit.Info)
+
+    /**
+     Will be called *on a background thread*, if an unexpected error happens during the polling loop in ``OrbotKit.notifyOnStatusChanges(_:)``.
+
+     Most notably: If you receive ``Errors.httpError(statusCode: 403))``, your ``OrbotKit.apiToken`` is invalid!
+     */
+    func statusChangeListeningStopped(error: Error)
 }
 
 /**
@@ -458,15 +482,15 @@ open class OrbotKit {
         closeCircuit(id: id, completion)
     }
 
-    private var deathListeners = [() -> OrbotDeathListener?]()
+    private var statusChangeListeners = [() -> OrbotStatusChangeListener?]()
     private var pollTask: URLSessionDataTask?
 
     /**
-     Informs the given listener, when the Orbot VPN died.
+     Informs the given listener, when the Orbot VPN status changes.
 
      You can call this as often as you like. OrbotKit will collect all listeners and inform all of them until
-     the Orbot VPN dies (in which case all listeners are removed) or the listeners are removed again by you.
-     (See ``removeDeathListener(_:)``.)
+     the listeners are removed again by you.
+     (See ``removeStatusChangeListener(_:)``.)
 
      This is achieved by long-polling a special endpoint which does nothing but wait a given amount of time
      (or 20 seconds as default) and return 204 OK after that time.
@@ -474,16 +498,14 @@ open class OrbotKit {
      This is repeated until the request returns with an error, times out
      or there are no more listeners.
 
-     If this method returns with HTTP 403, you didn't provide a valid access token!
+     If this method calls ``OrbotStatusChangeListener`` `.statusChangeListeningStopped(error: Error)``
+     with an HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     *NOTE*: Only call this after ``info(_:)`` returned a status which is not `.stopped`. Otherwise
-     your listener will be called immediately and removed again.
-
-     - parameter listener: A listener object which gets informed, when the Orbot VPN died.
+     - parameter listener: A listener object which gets informed of Orbot VPN status changes.
      */
-    open func notifyOnDeath(_ listener: OrbotDeathListener) {
-        deathListeners.append({ [weak listener] in listener })
+    open func notifyOnStatusChanges(_ listener: OrbotStatusChangeListener) {
+        statusChangeListeners.append({ [weak listener] in listener })
 
         // A background process was already started.
         if pollTask != nil {
@@ -494,18 +516,34 @@ open class OrbotKit {
             let group = DispatchGroup()
 
             var reason: Error? = nil
+            var wasDead: Bool? = nil
 
             repeat {
-                guard let timeout = self?.session.configuration.timeoutIntervalForRequest else {
+                // Only try 1 sec polls during death, so we can inform early, when it resurrects.
+                guard let timeout = wasDead == true ? 2 : self?.session.configuration.timeoutIntervalForRequest else {
                     break
                 }
+
+                var isNowDead = false
 
                 group.enter()
 
                 self?.pollTask = self?.request(.poll(length: UInt32(timeout - 1))) {
                     (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
 
-                    reason = error
+                    // NSURLErrorDomain -1004: "Could not connect to the server." - currently not running.
+                    if let error = error as? NSError, error.code == -1004 {
+                        isNowDead = true
+                        // Ignore this one, but throttle a little.
+                        sleep(1)
+                    }
+                    // NSURLErrorDomain -999: "cancelled" - ignore.
+                    else if let error = error as? NSError, error.code == -999 {
+                        // Ignore.
+                    }
+                    else {
+                        reason = error
+                    }
 
                     group.leave()
                 }
@@ -516,14 +554,36 @@ open class OrbotKit {
                 }
 
                 if group.wait(timeout: .now() + timeout) == .timedOut {
-                    reason = Errors.internalError
+                    self?.pollTask?.cancel()
+                    self?.pollTask = nil
+                }
+
+                if wasDead == nil {
+                    wasDead = isNowDead
+                }
+                else if wasDead != isNowDead {
+                    if isNowDead {
+                        self?.statusChangeListeners.forEach {
+                            $0()?.orbotStatusChanged(info: Info(status: .stopped))
+                        }
+                    }
+                    else {
+                        self?.info({ info, error in
+                            self?.statusChangeListeners.forEach {
+                                $0()?.orbotStatusChanged(info: info ?? Info(status: .started))
+                            }
+                        })
+                    }
+
+                    wasDead = isNowDead
                 }
             }
-            while reason == nil && !(self?.deathListeners.isEmpty ?? true)
+            while reason == nil && !(self?.statusChangeListeners.isEmpty ?? true)
 
-            self?.deathListeners.forEach { $0()?.died(error: reason ?? Errors.internalError) }
-            self?.deathListeners.removeAll()
+            self?.statusChangeListeners.forEach { $0()?.statusChangeListeningStopped(error: reason ?? Errors.internalError) }
+            self?.statusChangeListeners.removeAll()
 
+            self?.pollTask?.cancel()
             self?.pollTask = nil
         }
     }
@@ -533,17 +593,17 @@ open class OrbotKit {
 
      If no listeners are left, the long-polling request will be cancelled, too.
 
-     - parameter listener: An object which was listening for Orbot VPN's death.
+     - parameter listener: An object which was listening for status changes in Orbot VPN.
      */
-    open func removeDeathListener(_ listener: OrbotDeathListener? = nil) {
+    open func removeStatusChangeListener(_ listener: OrbotStatusChangeListener? = nil) {
         if listener == nil {
-            deathListeners.removeAll()
+            statusChangeListeners.removeAll()
         }
         else {
-            deathListeners.removeAll { $0() === listener }
+            statusChangeListeners.removeAll { $0() === listener }
         }
 
-        if deathListeners.isEmpty {
+        if statusChangeListeners.isEmpty {
             pollTask?.cancel()
         }
     }

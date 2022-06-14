@@ -9,7 +9,7 @@
 import UIKit
 import OrbotKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, OrbotDeathListener {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, OrbotStatusChangeListener {
 
     @IBOutlet weak var tableView: UITableView?
 
@@ -116,7 +116,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell.textLabel?.text = "Close last queried circuits"
 
             default:
-                cell.textLabel?.text = "Notify on death"
+                cell.textLabel?.text = "Notify on status change"
             }
         }
 
@@ -309,12 +309,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 if cell?.accessoryType == .checkmark {
                     cell?.accessoryType = .none
 
-                    OrbotKit.shared.removeDeathListener(self)
+                    OrbotKit.shared.removeStatusChangeListener(self)
                 }
                 else {
                     cell?.accessoryType = .checkmark
 
-                    OrbotKit.shared.notifyOnDeath(self)
+                    OrbotKit.shared.notifyOnStatusChanges(self)
                 }
             }
         }
@@ -323,9 +323,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
 
 
-    // MARK: OrbotDeathListener
+    // MARK: OrbotStatusChangeListener
 
-    func died(error: Error) {
+    func orbotStatusChanged(info: OrbotKit.Info) {
+        show(info.description, "Orbot VPN Status Changed")
+    }
+
+    func statusChangeListeningStopped(error: Error) {
         DispatchQueue.main.async {
             self.tableView?.cellForRow(at: IndexPath(row: 4, section: 2))?.accessoryType = .none
         }
@@ -334,7 +338,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             reloadApiSection()
         }
 
-        show("Dead!")
+        show("Error while listening for status changes:\n\n\(error)", "Error")
     }
 
 
