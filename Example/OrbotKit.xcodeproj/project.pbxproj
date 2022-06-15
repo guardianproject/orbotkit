@@ -32,6 +32,7 @@
 		90E860630A653A43C0CECF7D /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		A001F8C5282400F0008EB7C6 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		A038490128466C54000CE1B4 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		A049B955285A05B8001AEAD6 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		ABDE37FF9DAC40ED85373CA5 /* Pods-OrbotKit_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OrbotKit_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OrbotKit_Tests/Pods-OrbotKit_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		EB92E13775CA7E9925B503E2 /* Pods-OrbotKit_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OrbotKit_Example.debug.xcconfig"; path = "Target Support Files/Pods-OrbotKit_Example/Pods-OrbotKit_Example.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -106,6 +107,7 @@
 			children = (
 				5BFEC66EE64C82EB3EFBD120 /* OrbotKit.podspec */,
 				79528740FA40121443503C01 /* README.md */,
+				A049B955285A05B8001AEAD6 /* CHANGELOG.md */,
 				90E860630A653A43C0CECF7D /* LICENSE */,
 				A001F8C5282400F0008EB7C6 /* .gitignore */,
 			);
@@ -385,6 +387,7 @@
 				INFOPLIST_FILE = OrbotKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 0.1.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -401,6 +404,7 @@
 				INFOPLIST_FILE = OrbotKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 0.1.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
