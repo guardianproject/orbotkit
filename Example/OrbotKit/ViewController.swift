@@ -91,7 +91,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
 
         default:
-            if OrbotKit.apiToken?.isEmpty ?? true {
+            if OrbotKit.shared.apiToken?.isEmpty ?? true {
                 cell.selectionStyle = .none
                 cell.isUserInteractionEnabled = false
                 cell.textLabel?.isEnabled = false
@@ -148,21 +148,21 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
 
             case 2:
-                OrbotKit.shared.open(.showSettings) { success in
+                OrbotKit.shared.open(.settings) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 3:
-                OrbotKit.shared.open(.showBridges) { success in
+                OrbotKit.shared.open(.bridges) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 4:
-                OrbotKit.shared.open(.showAuth) { success in
+                OrbotKit.shared.open(.auth) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
@@ -192,7 +192,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     })
 
                     alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                        OrbotKit.apiToken = self.tokenAlert?.textFields?.first?.text
+                        OrbotKit.shared.apiToken = self.tokenAlert?.textFields?.first?.text
 
                         self.reloadApiSection()
 

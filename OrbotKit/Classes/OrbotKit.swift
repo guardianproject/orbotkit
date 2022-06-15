@@ -109,24 +109,24 @@ open class OrbotKit {
 
          Note: The user has to have it installed, first.
          Don't assume, that the Tor VPN is (immediately) available after you called this.
-         Use ``status(_:)`` to test, if Tor is running.
+         Use  ``info(_:)`` to test, if Tor is running.
          */
         case start
 
         /**
          Show Orbot's settings scene.
          */
-        case showSettings
+        case settings
 
         /**
          Show Orbot's bridge configuration scene.
          */
-        case showBridges
+        case bridges
 
         /**
          Show Orbot's authentication cookies scene.
          */
-        case showAuth
+        case auth
 
         /**
          Show Orbot's authentication cookies scene and prefill an "add cookie" dialog with the given arguments.
@@ -174,13 +174,13 @@ open class OrbotKit {
             case .start:
                 path = "start"
 
-            case .showSettings:
+            case .settings:
                 path = "show/settings"
 
-            case .showBridges:
+            case .bridges:
                 path = "show/bridges"
 
-            case .showAuth:
+            case .auth:
                 path = "show/auth"
 
             case .addAuth(let url, let key):
@@ -258,7 +258,7 @@ open class OrbotKit {
             var request = URLRequest(url: url)
             request.httpMethod = method
 
-            if let token = OrbotKit.apiToken {
+            if let token = OrbotKit.shared.apiToken {
                 request.addValue(token, forHTTPHeaderField: "X-Token")
             }
 
@@ -277,6 +277,12 @@ open class OrbotKit {
      */
     public static var shared = OrbotKit()
 
+
+    /**
+     To make sure you only talk to Orbot, and not some impersonating app, leave this set to `.universalLink`!
+     */
+    open var uiUrlType = UiUrlType.universalLink(noWeb: true)
+
     /**
      A valid API access token. You will be unable to make requests to the REST API without this.
 
@@ -288,18 +294,14 @@ open class OrbotKit {
      Store that value somewhere appropriate (e.g. in `UserDefaults`) as soon as you receive it
      and repopulate this field on app start.
      */
-    public static var apiToken: String? = nil
-
-
-    /**
-     To make sure you only talk to Orbot, and not some impersonating app, leave this set to `.universalLink`!
-     */
-    open var uiUrlType = UiUrlType.universalLink(noWeb: true)
+    open var apiToken: String? = nil
 
     /**
      The  `URLSession` used for all HTTP REST requests.
 
      You can modify/exchange this, if you think you need to.
+
+     The provided one will switch off all caching.
      */
     open lazy var session: URLSession = {
         let config = URLSessionConfiguration.default
@@ -638,7 +640,7 @@ open class OrbotKit {
 
             if statusCode < 200 || statusCode >= 300 {
                 if statusCode == 403 {
-                    Self.apiToken = nil // This token is invalid.
+                    self.apiToken = nil // This token is invalid.
                 }
 
                 return completion(nil, Errors.httpError(statusCode: statusCode))
