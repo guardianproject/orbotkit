@@ -10,18 +10,6 @@ Pod::Spec.new do |s|
   s.name             = 'OrbotKit'
   s.version          = '0.1.0'
   s.summary          = 'Library to interact with Orbot iOS.'
-
-  s.description      = <<-DESC
-    This is the easiest way to interact with Orbot iOS.
-
-    Orbot iOS support the `orbot` scheme and the associated domain `orbot.app`
-    for UI interactions and contains a small REST webserver listening on
-    localhost to return useful information.
-
-    This library abstracts all of this away and provides nice classes
-    for the JSON deserialization.
-                       DESC
-
   s.homepage         = 'https://github.com/guardianproject/orbotkit'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Benjamin Erhart' => 'berhart@netzarchitekten.com' }
