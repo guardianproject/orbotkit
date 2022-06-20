@@ -199,11 +199,14 @@ If you want to receive the REST API token via callback, add this to your `Info.p
     func orbotStatusChanged(info: OrbotKit.Info) {
         print(info)
 
-        // The implementation is not complete:
-        // Status will change from `.stopped` to `.starting` or `.started` (race condition)
-        // and from `.started` to `.stopped` again, but **not**
-        // from `.starting` to `.started`.
-        // Therefore you should treat `.starting` and `.started` equivalently.
+        // There is a potential race condition when changing out of `.stopped`:
+        // When Orbot is fast enough and/or your app doesn't receive processing
+        // time, then you might not receive `.starting` but `.started` immediately
+        // after `.stopped`.
+        // Also, the implementation is not complete before Orbot 1.3.0:
+        // With that version, the status will **not** change from `.starting` to `.started`.
+        // 
+        // Therefore you should typically treat `.starting` and `.started` equivalently.
     }
 
     func statusChangeListeningStopped(error: Error) {

@@ -495,7 +495,10 @@ open class OrbotKit {
      (See ``removeStatusChangeListener(_:)``.)
 
      This is achieved by long-polling a special endpoint which does nothing but wait a given amount of time
-     (or 20 seconds as default) and return 204 OK after that time.
+     (or 20 seconds as default) and return the current status after that time.
+
+     Note: Version 1.3.0 of Orbot will return 204 OK (empty body) instead of the current status. In that case,
+     a status `.started` is mocked, without the details.
 
      This is repeated until the request returns with an error, times out
      or there are no more listeners.
@@ -517,25 +520,25 @@ open class OrbotKit {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             let group = DispatchGroup()
 
+            var lastInfo: Info? = nil
             var reason: Error? = nil
-            var wasDead: Bool? = nil
 
             repeat {
                 // Only try 1 sec polls during death, so we can inform early, when it resurrects.
-                guard let timeout = wasDead == true ? 2 : self?.session.configuration.timeoutIntervalForRequest else {
+                guard let timeout = lastInfo?.status != .started ? 2 : self?.session.configuration.timeoutIntervalForRequest else {
                     break
                 }
 
-                var isNowDead = false
-
                 group.enter()
 
+                var info: Info?
+
                 self?.pollTask = self?.request(.poll(length: UInt32(timeout - 1))) {
-                    (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
+                    (i: Info?, error: Error?) in
 
                     // NSURLErrorDomain -1004: "Could not connect to the server." - currently not running.
                     if let error = error as? NSError, error.code == -1004 {
-                        isNowDead = true
+                        info = Info(status: .stopped)
                         // Ignore this one, but throttle a little.
                         sleep(1)
                     }
@@ -543,8 +546,12 @@ open class OrbotKit {
                     else if let error = error as? NSError, error.code == -999 {
                         // Ignore.
                     }
-                    else {
+                    else if let error = error {
                         reason = error
+                    }
+                    else {
+                        // Fallback for Orbot 1.3.0, which responds with an empty body.
+                        info = i ?? Info(status: .started)
                     }
 
                     group.leave()
@@ -560,24 +567,16 @@ open class OrbotKit {
                     self?.pollTask = nil
                 }
 
-                if wasDead == nil {
-                    wasDead = isNowDead
+                // Don't call status change listeners the first time.
+                if lastInfo == nil {
+                    lastInfo = info
                 }
-                else if wasDead != isNowDead {
-                    if isNowDead {
-                        self?.statusChangeListeners.forEach {
-                            $0()?.orbotStatusChanged(info: Info(status: .stopped))
-                        }
-                    }
-                    else {
-                        self?.info({ info, error in
-                            self?.statusChangeListeners.forEach {
-                                $0()?.orbotStatusChanged(info: info ?? Info(status: .started))
-                            }
-                        })
+                else if let info = info, lastInfo?.status != info.status {
+                    self?.statusChangeListeners.forEach {
+                        $0()?.orbotStatusChanged(info: info)
                     }
 
-                    wasDead = isNowDead
+                    lastInfo = info
                 }
             }
             while reason == nil && !(self?.statusChangeListeners.isEmpty ?? true)
