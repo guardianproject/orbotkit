@@ -271,6 +271,10 @@ open class OrbotKit {
      */
     public typealias UICompletionHandler = ((_ success: Bool) -> Void)?
 
+    /**
+     Link to the official Orbot app in the App Store.
+     */
+    public static let appStoreLink = URL(string: "itms-apps://apple.com/app/id1609461599")!
 
     /**
      A singleton instance of this class.

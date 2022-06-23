@@ -37,6 +37,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="OrbotKit Example" id="It4-h1-r4O">
+                        <barButtonItem key="leftBarButtonItem" image="app.gift" id="Duw-5W-wsg">
+                            <connections>
+                                <action selector="openStore:" destination="BYZ-38-t0r" id="kzj-be-yBl"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" image="network" id="4oK-Qa-cfo">
                             <connections>
                                 <action selector="toggleUrlType:" destination="BYZ-38-t0r" id="JtE-WC-d1P"/>
@@ -69,6 +74,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="app.gift" width="18" height="18"/>
         <image name="network" width="20" height="20"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

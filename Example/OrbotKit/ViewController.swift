@@ -344,6 +344,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     // MARK: Actions
 
+    @IBAction func openStore(_ sender: UIBarButtonItem) {
+        UIApplication.shared.open(OrbotKit.appStoreLink)
+    }
+
     @IBAction func toggleUrlType(_ item: UIBarButtonItem) {
         switch OrbotKit.shared.uiUrlType {
         case .orbotScheme:
