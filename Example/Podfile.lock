@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  OrbotKit: bcaa8b9cea46d0c25dec358b64002aa49990d27e
+  OrbotKit: 2d14f0a3ddc900bf672b693ab2bcc61118836e59
 
 PODFILE CHECKSUM: 061452afa1fb63a94b41e1148eacc3ecbff9d94e
 

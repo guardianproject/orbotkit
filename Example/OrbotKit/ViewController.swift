@@ -348,11 +348,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         switch OrbotKit.shared.uiUrlType {
         case .orbotScheme:
             OrbotKit.shared.uiUrlType = .universalLink(noWeb: true)
-            item.image = UIImage(systemName: "network")
+            item.image = UIImage(named: "network")
 
         case .universalLink:
             OrbotKit.shared.uiUrlType = .orbotScheme
-            item.image = UIImage(systemName: "iphone")
+            item.image = UIImage(named: "iphone")
         }
     }
 
