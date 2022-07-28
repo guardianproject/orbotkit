@@ -855,7 +855,7 @@ open class OrbotKit {
         /**
          The country code of a Tor node's country.
          */
-        public let countryCode: String
+        public let countryCode: String?
 
         /**
          The localized country name of a Tor node's country.
