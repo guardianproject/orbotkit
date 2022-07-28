@@ -1,5 +1,8 @@
 #  OrbotKit Changelog
 
+## 0.2.2
+- Fixed `TorNode.countryCode`, which was accidentally defined non-nil, but can be `nil`.
+
 ## 0.2.1
 - Added Orbot app store link.
 
