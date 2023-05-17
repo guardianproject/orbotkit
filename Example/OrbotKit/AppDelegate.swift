@@ -36,6 +36,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
             break
 
+        case "main":
+            vc.show("Called back after 'start'.")
+
         default:
             return false
         }

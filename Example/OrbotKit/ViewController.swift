@@ -141,7 +141,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
 
             case 1:
-                OrbotKit.shared.open(.start) { success in
+                OrbotKit.shared.open(.start(callback: URL(string: "orbotkit-example:main"))) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }

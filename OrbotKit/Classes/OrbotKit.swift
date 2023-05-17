@@ -110,8 +110,13 @@ open class OrbotKit {
          Note: The user has to have it installed, first.
          Don't assume, that the Tor VPN is (immediately) available after you called this.
          Use  ``info(_:)`` to test, if Tor is running.
+
+         Orbot will try to call you back after the connection was successfully established,
+         if you provide a `callback` argument and the Orbot version installed supports this.
+
+         - parameter callback: An optional callback URL pointing to a scheme and path your app can handle.
          */
-        case start
+        case start(callback: URL? = nil)
 
         /**
          Show Orbot's settings scene.
@@ -171,8 +176,12 @@ open class OrbotKit {
             case .show:
                 path = "show"
 
-            case .start:
+            case .start(let callback):
                 path = "start"
+
+                if let callback = callback {
+                    urlc.queryItems = [URLQueryItem(name: "callback", value: callback.absoluteString)]
+                }
 
             case .settings:
                 path = "show/settings"
