@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'OrbotKit'
-  s.version          = '0.2.2'
+  s.version          = '1.0.0'
   s.summary          = 'Library to interact with Orbot iOS.'
   s.homepage         = 'https://github.com/guardianproject/orbotkit'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }

@@ -89,7 +89,7 @@ If you want to receive the REST API token via callback, add this to your `Info.p
     // Other UX interactions:
 
     // Starts the VPN:
-    OrbotKit.shared.open(.start)
+    OrbotKit.shared.open(.start())
 
     // Opens Orbot in the settings scene:
     OrbotKit.shared.open(.settings)

@@ -1,5 +1,9 @@
 #  OrbotKit Changelog
 
+## 1.0.0
+- Added support for an optional callback URL to the `start` command.
+- Added `orbotName´ convenience constant containing the string "Orbot" for use in apps.
+
 ## 0.2.2
 - Fixed `TorNode.countryCode`, which was accidentally defined non-nil, but can be `nil`.
 
