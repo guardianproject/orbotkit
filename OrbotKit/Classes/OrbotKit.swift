@@ -286,6 +286,13 @@ open class OrbotKit {
     public static let appStoreLink = URL(string: "itms-apps://apple.com/app/id1609461599")!
 
     /**
+     Official, non-translatable name of the Orbot app.
+
+     Here for your convenience, to use e.g. in translation strings with placeholders.
+     */
+    public static let orbotName = "Orbot"
+
+    /**
      A singleton instance of this class.
      */
     public static var shared = OrbotKit()
@@ -396,7 +403,7 @@ open class OrbotKit {
      If this method returns with HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     - parameter completion: Returns a ``Info`` object on success or an `Error` object, never both. This block is executed on the `session.delegateQueue`.
+     - parameter completion: Returns an ``Info`` object on success or an `Error` object, never both. This block is executed on the `session.delegateQueue`.
      - parameter info: Orbot status and metadata.
      - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
