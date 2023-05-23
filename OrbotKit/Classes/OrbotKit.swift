@@ -203,6 +203,10 @@ open class OrbotKit {
                     URLQueryItem(name: "app-id", value: Bundle.main.bundleIdentifier),
                     URLQueryItem(name: "need-bypass", value: String(needBypass))]
 
+                if let displayName = Bundle.main.displayName, !displayName.isEmpty {
+                    urlc.queryItems?.append(URLQueryItem(name: "app-name", value: displayName))
+                }
+
                 if let callback = callback {
                     urlc.queryItems?.append(URLQueryItem(name: "callback", value: callback.absoluteString))
                 }
@@ -877,5 +881,13 @@ open class OrbotKit {
          The localized country name of a Tor node's country.
          */
         public let localizedCountryName: String?
+    }
+}
+
+public extension Bundle {
+
+    var displayName: String? {
+        return object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? object(forInfoDictionaryKey: kCFBundleNameKey as String) as? String
     }
 }
