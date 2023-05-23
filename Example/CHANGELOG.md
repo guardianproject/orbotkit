@@ -1,5 +1,8 @@
 #  OrbotKit Changelog
 
+## 1.0.1
+- Added missing support for app name when requesting API token.
+
 ## 1.0.0
 - Added support for an optional callback URL to the `start` command.
 - Added `orbotName´ convenience constant containing the string "Orbot" for use in apps.
