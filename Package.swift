@@ -16,5 +16,4 @@ let package = Package(
             path: "OrbotKit"
         )
     ],
-    swiftLanguageVersions: [.v5]
 )
