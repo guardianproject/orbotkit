@@ -219,7 +219,15 @@ If you want to receive the REST API token via callback, add this to your `Info.p
 ```
 
 ## Installation
+### Swift Package Manager
+OrbotKit is available through [Swift Package Manager](https://www.swift.org/package-manager/). To install
+it, simply add the following line to your `Package.swift`:
 
+```swift
+dependencies: [.package(url: "https://github.com/guardianproject/orbotkit.git", from: "1.0.0")]
+```
+
+### Cocoapods
 OrbotKit is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
