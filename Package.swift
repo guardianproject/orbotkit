@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "OrbotKit",
     platforms: [
-        .iOS(.v15),
+        .iOS(.v11),
     ],
     products: [
         .library(name: "OrbotKit", targets: ["OrbotKit"])
