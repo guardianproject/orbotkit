@@ -31,6 +31,14 @@ Orbot provides 2 means to interact with it:
   You can store that access token (e.g. in `UserDefaults`) and reuse it later.
   However, users can always withdraw access, so be prepared for that situation.
 
+- Exception: A `stop` UI command is available, which needs an access token. Otherwise
+  Orbot will display an alert which explains, that your app should have provided an access token, 
+  but where the user also can stop manually. 
+  They will not be returned to your app, in that case, though.
+  So, make sure to do the authorization first!
+  
+  (This feature is only available from Orbot 1.6.1 onwards.)
+  
 
 ## Example
 
