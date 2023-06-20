@@ -119,6 +119,21 @@ open class OrbotKit {
         case start(callback: URL? = nil)
 
         /**
+         Stop the Network Extension, if not stopped.
+
+         Available from Orbot 1.6.1!
+
+         Orbot will try to call you back after successful disconnection, if you provide a `callback` argument.
+
+         This is the only UI call which needs a valid token!
+         Otherwise, the user will see a warning dialog about missing authorization, where they can stop manually. The user will not be returned to your app, in that case!
+
+         - parameter token: Access token
+         - parameter callback: An optional callback URL pointing to a scheme and path your app can handle.
+         */
+        case stop(token: String, callback: URL? = nil)
+
+        /**
          Show Orbot's settings scene.
          */
         case settings
@@ -181,6 +196,15 @@ open class OrbotKit {
 
                 if let callback = callback {
                     urlc.queryItems = [URLQueryItem(name: "callback", value: callback.absoluteString)]
+                }
+
+            case .stop(let token, let callback):
+                path = "stop"
+
+                urlc.queryItems = [URLQueryItem(name: "token", value: token)]
+
+                if let callback = callback {
+                    urlc.queryItems?.append(URLQueryItem(name: "callback", value: callback.absoluteString))
                 }
 
             case .settings:

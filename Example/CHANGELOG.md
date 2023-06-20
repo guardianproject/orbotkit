@@ -1,5 +1,8 @@
 #  OrbotKit Changelog
 
+## 1.0.2
+- Added support for new "stop" UI command.
+
 ## 1.0.1
 - Added missing support for app name when requesting API token.
 

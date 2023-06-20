@@ -38,7 +38,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             return 1
 
         case 1:
-            return 7
+            return 8
 
         default:
             return 5
@@ -75,15 +75,20 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell.textLabel?.text = "Start Orbot VPN"
 
             case 2:
-                cell.textLabel?.text = "Show Settings"
+                cell.textLabel?.text = "Stop Orbot VPN"
+
+                enable(cell, !(OrbotKit.shared.apiToken?.isEmpty ?? true))
 
             case 3:
-                cell.textLabel?.text = "Show Bridge Settings"
+                cell.textLabel?.text = "Show Settings"
 
             case 4:
-                cell.textLabel?.text = "Show Auth Settings"
+                cell.textLabel?.text = "Show Bridge Settings"
 
             case 5:
+                cell.textLabel?.text = "Show Auth Settings"
+
+            case 6:
                 cell.textLabel?.text = "Add an Auth Cookie"
 
             default:
@@ -91,16 +96,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
 
         default:
-            if OrbotKit.shared.apiToken?.isEmpty ?? true {
-                cell.selectionStyle = .none
-                cell.isUserInteractionEnabled = false
-                cell.textLabel?.isEnabled = false
-            }
-            else {
-                cell.selectionStyle = .default
-                cell.isUserInteractionEnabled = true
-                cell.textLabel?.isEnabled = true
-            }
+            enable(cell, !(OrbotKit.shared.apiToken?.isEmpty ?? true))
 
             switch indexPath.row {
             case 0:
@@ -141,34 +137,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
 
             case 1:
-                OrbotKit.shared.open(.start(callback: URL(string: "orbotkit-example:main"))) { success in
+                OrbotKit.shared.open(.start(callback: URL(string: "orbotkit-example:started"))) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 2:
-                OrbotKit.shared.open(.settings) { success in
+//                let token = OrbotKit.shared.apiToken ?? ""
+                guard let token = OrbotKit.shared.apiToken else {
+                    return self.show("Cannot stop without authorization token!", "Error")
+                }
+
+                OrbotKit.shared.open(.stop(token: token, callback: URL(string: "orbotkit-example:stopped"))) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 3:
-                OrbotKit.shared.open(.bridges) { success in
+                OrbotKit.shared.open(.settings) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 4:
-                OrbotKit.shared.open(.auth) { success in
+                OrbotKit.shared.open(.bridges) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
                     }
                 }
 
             case 5:
+                OrbotKit.shared.open(.auth) { success in
+                    if !success {
+                        self.show("Link could not be opened!", "Error")
+                    }
+                }
+
+            case 6:
                 OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678")) { success in
                     if !success {
                         self.show("Link could not be opened!", "Error")
@@ -194,7 +202,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                         OrbotKit.shared.apiToken = self.tokenAlert?.textFields?.first?.text
 
-                        self.reloadApiSection()
+                        self.reloadSections()
 
                         self.tokenAlert = nil
                     })
@@ -210,7 +218,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 OrbotKit.shared.info { info, error in
                     switch error {
                     case OrbotKit.Errors.httpError(403)?:
-                        self.reloadApiSection()
+                        self.reloadSections()
 
                     case .some(let error):
                         print(error)
@@ -231,7 +239,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     OrbotKit.shared.circuits(host: "torproject.org") { circuits, error in
                         switch error {
                         case OrbotKit.Errors.httpError(403)?:
-                            self.reloadApiSection()
+                            self.reloadSections()
 
                         case .some(let error):
                             print(error)
@@ -257,7 +265,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     OrbotKit.shared.circuits(host: "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion") { circuits, error in
                         switch error {
                         case OrbotKit.Errors.httpError(403)?:
-                            self.reloadApiSection()
+                            self.reloadSections()
 
                         case .some(let error):
                             print(error)
@@ -290,7 +298,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
                     OrbotKit.shared.closeCircuit(id: id) { success, error in
                         if case OrbotKit.Errors.httpError(403)? = error {
-                            self.reloadApiSection()
+                            self.reloadSections()
                         }
 
                         results.append("Circuit \(id): \(error?.localizedDescription ?? (success ? "success" : "failure"))")
@@ -335,7 +343,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
 
         if case OrbotKit.Errors.httpError(403) = error {
-            reloadApiSection()
+            reloadSections()
         }
 
         show("Error while listening for status changes:\n\n\(error)", "Error")
@@ -373,9 +381,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
 
-    func reloadApiSection() {
-        DispatchQueue.main.async {
-            self.tableView?.reloadSections([2], with: .fade)
+    func reloadSections() {
+        var rows = [IndexPath(row: 2, section: 1)]
+
+        if let tableView = tableView {
+            for i in 0 ... self.tableView(tableView, numberOfRowsInSection: 2) {
+                rows.append(IndexPath(row: i, section: 2))
+            }
         }
+
+        DispatchQueue.main.async {
+            self.tableView?.reloadRows(at: rows, with: .fade)
+        }
+    }
+
+    func enable(_ cell: UITableViewCell, _ toggle: Bool) {
+        cell.selectionStyle = toggle ? .default : .none
+        cell.isUserInteractionEnabled = toggle
+        cell.textLabel?.isEnabled = toggle
     }
 }
