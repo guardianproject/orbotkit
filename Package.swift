@@ -11,8 +11,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "OrbotKit",
-            dependencies: []
+            name: "OrbotKit"
         )
     ]
 )
