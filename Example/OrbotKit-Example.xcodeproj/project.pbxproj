@@ -16,8 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2AB056FC3B17030B3CC13E18 /* Pods_OrbotKit_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OrbotKit_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		5BFEC66EE64C82EB3EFBD120 /* OrbotKit.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = OrbotKit.podspec; path = ../OrbotKit.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		5BFEC66EE64C82EB3EFBD120 /* OrbotKit.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = OrbotKit.podspec; path = ../OrbotKit.podspec; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* OrbotKit_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OrbotKit_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -25,7 +24,6 @@
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		651F2C0564E5015E8099A27F /* Pods_OrbotKit_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OrbotKit_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79528740FA40121443503C01 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		90E860630A653A43C0CECF7D /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		A001F8C5282400F0008EB7C6 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
@@ -49,10 +47,14 @@
 		607FACC71AFB9204008FA782 = {
 			isa = PBXGroup;
 			children = (
-				607FACF51AFB993E008FA782 /* Podspec Metadata */,
+				5BFEC66EE64C82EB3EFBD120 /* OrbotKit.podspec */,
+				A08249052A49BE2A001EA7BD /* Package.swift */,
+				79528740FA40121443503C01 /* README.md */,
+				A049B955285A05B8001AEAD6 /* CHANGELOG.md */,
+				90E860630A653A43C0CECF7D /* LICENSE */,
+				A001F8C5282400F0008EB7C6 /* .gitignore */,
 				607FACD21AFB9204008FA782 /* Example for OrbotKit */,
 				607FACD11AFB9204008FA782 /* Products */,
-				6CD234FC615E974233BCDA3A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -75,7 +77,7 @@
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 			);
 			name = "Example for OrbotKit";
-			path = OrbotKit;
+			path = "OrbotKit-Example";
 			sourceTree = "<group>";
 		};
 		607FACD31AFB9204008FA782 /* Supporting Files */ = {
@@ -85,28 +87,6 @@
 				A038490128466C54000CE1B4 /* Config.xcconfig */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		607FACF51AFB993E008FA782 /* Podspec Metadata */ = {
-			isa = PBXGroup;
-			children = (
-				5BFEC66EE64C82EB3EFBD120 /* OrbotKit.podspec */,
-				A08249052A49BE2A001EA7BD /* Package.swift */,
-				79528740FA40121443503C01 /* README.md */,
-				A049B955285A05B8001AEAD6 /* CHANGELOG.md */,
-				90E860630A653A43C0CECF7D /* LICENSE */,
-				A001F8C5282400F0008EB7C6 /* .gitignore */,
-			);
-			name = "Podspec Metadata";
-			sourceTree = "<group>";
-		};
-		6CD234FC615E974233BCDA3A /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				2AB056FC3B17030B3CC13E18 /* Pods_OrbotKit_Example.framework */,
-				651F2C0564E5015E8099A27F /* Pods_OrbotKit_Tests.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,7 +129,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "OrbotKit" */;
+			buildConfigurationList = 607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "OrbotKit-Example" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -332,7 +312,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = OrbotKit/Info.plist;
+				INFOPLIST_FILE = "OrbotKit-Example/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -358,7 +338,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = OrbotKit/Info.plist;
+				INFOPLIST_FILE = "OrbotKit-Example/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -380,7 +360,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "OrbotKit" */ = {
+		607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "OrbotKit-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				607FACED1AFB9204008FA782 /* Debug */,

@@ -42,7 +42,7 @@ Orbot provides 2 means to interact with it:
 
 ## Example
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+The example project is located in the `Example` directory.
 
 ## Usage
 

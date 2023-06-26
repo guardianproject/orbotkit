@@ -1,6 +1,6 @@
 //
 //  Config.xcconfig
-//  OrbotKit
+//  OrbotKit-Example
 //
 //  Created by Benjamin Erhart on 31.05.22.
 //  Copyright © 2022 Guardian Project. All rights reserved.
@@ -10,8 +10,8 @@
 // https://help.apple.com/xcode/#/dev745c5c974
 
 // Avoid accidental checkins:
-// git update-index --skip-worktree Example/OrbotKit/Config.xcconfig
-// git update-index --no-skip-worktree Example/OrbotKit/Config.xcconfig
+// git update-index --skip-worktree Example/OrbotKit-Example/Config.xcconfig
+// git update-index --no-skip-worktree Example/OrbotKit-Example/Config.xcconfig
 
 PRODUCT_BUNDLE_IDENTIFIER[config=Debug] =
 DEVELOPMENT_TEAM[config=Debug] =
