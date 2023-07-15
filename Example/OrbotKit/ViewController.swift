@@ -362,7 +362,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             OrbotKit.shared.uiUrlType = .universalLink(noWeb: true)
             item.image = UIImage(named: "network")
 
-        case .universalLink:
+        default:
             OrbotKit.shared.uiUrlType = .orbotScheme
             item.image = UIImage(named: "iphone")
         }

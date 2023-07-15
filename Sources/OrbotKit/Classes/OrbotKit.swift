@@ -65,6 +65,11 @@ open class OrbotKit {
          - parameter noWeb: If `true`, the user will not be sent to the `orbot.app` website, in case Orbot is not installed.
          */
         case universalLink(noWeb: Bool)
+
+        /**
+         Use `https://orbot.app/rc/` links with `noWeb = true`. In case this doesn't work, fall back to `orbot:` scheme URLs.
+         */
+        case failover
     }
 
     /**
@@ -241,7 +246,7 @@ open class OrbotKit {
                 urlc.scheme = "orbot"
                 urlc.path = path
 
-            case .universalLink:
+            default:
                 urlc.scheme = "https"
                 urlc.host = "orbot.app"
                 urlc.path = "/rc/\(path)"
@@ -327,9 +332,12 @@ open class OrbotKit {
 
 
     /**
-     To make sure you only talk to Orbot, and not some impersonating app, leave this set to `.universalLink`!
+     To be absolutely sure you only talk to Orbot, and not some impersonating app, set this set to `.universalLink`!
+
+     The default since version 1.1.0 is `failover`, which still makes it hard to hijack the `orbot` scheme, but
+     also is more robust in case of problems with the associated domain.
      */
-    open var uiUrlType = UiUrlType.universalLink(noWeb: true)
+    open var uiUrlType = UiUrlType.failover
 
     /**
      A valid API access token. You will be unable to make requests to the REST API without this.
@@ -396,10 +404,17 @@ open class OrbotKit {
      Open Orbot with a certain UI.
 
      - parameter command: The command to execute.
+     - parameter fallback: If `.uiUrlType`is `.failover` and this is `true`, fall back to `.orbotScheme` usage.
      - parameter completion: The block to execute when the operation finished.
      This block is executed asynchronously on your app's main thread.
      */
-    open func open(_ command: UiCommand, _ completion: UICompletionHandler = nil) {
+    open func open(_ command: UiCommand, fallback: Bool = false, _ completion: UICompletionHandler = nil) {
+        var uiUrlType = uiUrlType
+
+        if case .failover = uiUrlType {
+            uiUrlType = fallback ? .orbotScheme : .universalLink(noWeb: true)
+        }
+
         guard let url = command.url(for: uiUrlType) else {
             DispatchQueue.main.async {
                 completion?(false)
@@ -417,7 +432,16 @@ open class OrbotKit {
             options = [:]
         }
 
-        UIApplication.shared.open(url, options: options, completionHandler: completion)
+        UIApplication.shared.open(url, options: options) { success in
+            if case .failover = self.uiUrlType {
+                if !success && !fallback {
+                    // Try again with scheme handler, if no success and not fallback already.
+                    return self.open(command, fallback: true, completion)
+                }
+            }
+
+            completion?(success)
+        }
     }
 
 
