@@ -1,6 +1,9 @@
 #  OrbotKit Changelog
 
-## 1.0.2
+## 1.1.0
+- Added `failover` `UiUrlType` which first tries `universalLink` and then falls back to `orbotScheme`.
+  Less secure, but more robust. Attackers which try to hijack the `orbot` scheme still have a slim
+  chance of becoming successful.
 - Added support for new "stop" UI command.
 
 ## 1.0.1
@@ -8,7 +11,7 @@
 
 ## 1.0.0
 - Added support for an optional callback URL to the `start` command.
-- Added `orbotName´ convenience constant containing the string "Orbot" for use in apps.
+- Added `orbotName` convenience constant containing the string "Orbot" for use in apps.
 
 ## 0.2.2
 - Fixed `TorNode.countryCode`, which was accidentally defined non-nil, but can be `nil`.
@@ -22,5 +25,4 @@
   but apps who support it may have different ideas. 
 
 ## 0.1.0
-
 - Initial release.
