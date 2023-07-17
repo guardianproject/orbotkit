@@ -13,6 +13,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     @IBOutlet weak var tableView: UITableView?
 
+    @IBOutlet weak var uiUrlModeBt: UIBarButtonItem! {
+        didSet {
+            updateUiUrlModeButton()
+        }
+    }
+
+
     private static let cellReuseId = "cell-reuse-id"
 
 
@@ -360,12 +367,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         switch OrbotKit.shared.uiUrlType {
         case .orbotScheme:
             OrbotKit.shared.uiUrlType = .universalLink(noWeb: true)
-            item.image = UIImage(named: "network")
 
-        default:
+        case .universalLink(noWeb: _):
+            OrbotKit.shared.uiUrlType = .failover
+
+        case .failover:
             OrbotKit.shared.uiUrlType = .orbotScheme
-            item.image = UIImage(named: "iphone")
         }
+
+        updateUiUrlModeButton()
     }
 
 
@@ -399,5 +409,21 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.selectionStyle = toggle ? .default : .none
         cell.isUserInteractionEnabled = toggle
         cell.textLabel?.isEnabled = toggle
+    }
+
+
+    // MARK: Private Methods
+
+    func updateUiUrlModeButton() {
+        switch OrbotKit.shared.uiUrlType {
+        case .orbotScheme:
+            uiUrlModeBt.image = UIImage(named: "iphone")
+
+        case .universalLink(noWeb: _):
+            uiUrlModeBt.image = UIImage(named: "network")
+
+        case .failover:
+            uiUrlModeBt.image = UIImage(named: "bandage")
+        }
     }
 }
