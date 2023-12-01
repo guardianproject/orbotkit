@@ -243,6 +243,10 @@ it, simply add the following line to your Podfile:
 pod 'OrbotKit'
 ```
 
+## Further reading
+
+https://tordev.guardianproject.info
+
 ## Author
 
 Benjamin Erhart, [Die Netzarchitekten e.U.](https://die.netzarchitekten.com)
