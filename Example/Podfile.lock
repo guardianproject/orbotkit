@@ -1,5 +1,5 @@
 PODS:
-  - OrbotKit (1.1.0)
+  - OrbotKit (1.2.0)
 
 DEPENDENCIES:
   - OrbotKit (from `../`)
@@ -9,8 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  OrbotKit: 5e69508dee1943144fefa18a197fbf2030dfbe36
+  OrbotKit: e932cc741c18e9a39242ae1c61eea6d54e54bd87
 
 PODFILE CHECKSUM: 061452afa1fb63a94b41e1148eacc3ecbff9d94e
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.16.2

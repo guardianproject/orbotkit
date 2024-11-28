@@ -1,5 +1,8 @@
 #  OrbotKit Changelog
 
+## 1.2.0
+- Updated to latest Xcode 16.1. Increased minimal iOS version to 12.0.
+
 ## 1.1.0
 - Added `failover` `UiUrlType` which first tries `universalLink` and then falls back to `orbotScheme`.
   Less secure, but more robust. Attackers which try to hijack the `orbot` scheme still have a slim
