@@ -1,5 +1,10 @@
 #  OrbotKit Changelog
 
+## 2.0.0
+- Updated to latest Xcode 27.2. Increased minimal iOS version to 15.0.
+- Made API fully async/await.
+- Last CocoaPods release.
+
 ## 1.2.0
 - Updated to latest Xcode 16.1. Increased minimal iOS version to 12.0.
 

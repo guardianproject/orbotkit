@@ -27,7 +27,6 @@
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		63EC89CF0DEFA3BB9DC9ED59 /* Pods-OrbotKit_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OrbotKit_Tests.release.xcconfig"; path = "Target Support Files/Pods-OrbotKit_Tests/Pods-OrbotKit_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		651F2C0564E5015E8099A27F /* Pods_OrbotKit_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OrbotKit_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79528740FA40121443503C01 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		90E860630A653A43C0CECF7D /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
@@ -36,7 +35,6 @@
 		A049B955285A05B8001AEAD6 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		A08249052A49BE2A001EA7BD /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
 		A0EE54D23098DEA100A9D41D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		ABDE37FF9DAC40ED85373CA5 /* Pods-OrbotKit_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OrbotKit_Tests.debug.xcconfig"; path = "Target Support Files/Pods-OrbotKit_Tests/Pods-OrbotKit_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		EB92E13775CA7E9925B503E2 /* Pods-OrbotKit_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OrbotKit_Example.debug.xcconfig"; path = "Target Support Files/Pods-OrbotKit_Example/Pods-OrbotKit_Example.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -57,8 +55,6 @@
 			children = (
 				EB92E13775CA7E9925B503E2 /* Pods-OrbotKit_Example.debug.xcconfig */,
 				0FECDFD5C36A3BA0683D0106 /* Pods-OrbotKit_Example.release.xcconfig */,
-				ABDE37FF9DAC40ED85373CA5 /* Pods-OrbotKit_Tests.debug.xcconfig */,
-				63EC89CF0DEFA3BB9DC9ED59 /* Pods-OrbotKit_Tests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -405,7 +401,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 2.0.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -429,7 +425,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 2.0.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

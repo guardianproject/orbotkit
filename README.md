@@ -81,10 +81,9 @@ If you want to receive the REST API token via callback, add this to your `Info.p
     print("Orbot installed: \(OrbotKit.shared.installed)")
 
     // Opens Orbot in the main scene:
-    OrbotKit.shared.open(.show) { success in
-        if !success {
-            print("Link could not be opened!")
-        }
+    let success = await OrbotKit.shared.open(.show)
+    if !success {
+        print("Link could not be opened!")
     }
 
     // Set OrbotKit to use the universal link. (default, but could break in edge cases):
@@ -97,29 +96,29 @@ If you want to receive the REST API token via callback, add this to your `Info.p
     // Other UX interactions:
 
     // Starts the VPN:
-    OrbotKit.shared.open(.start())
+    await OrbotKit.shared.open(.start())
 
     // Opens Orbot in the settings scene:
-    OrbotKit.shared.open(.settings)
+    await OrbotKit.shared.open(.settings)
 
     // Opens Orbot in the bridge configuration scene:
-    OrbotKit.shared.open(.bridges)
+    await OrbotKit.shared.open(.bridges)
 
     // Opens Orbot in the auth cookie scene: (Onion v3 services auth cookies)
-    OrbotKit.shared.open(.auth)
+    await OrbotKit.shared.open(.auth)
 
     // Adds an Onion v3 service auth cookie, if the user accepts it.
-    OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678"))
+    await OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678"))
 
     // Requests a REST API access token:
-    OrbotKit.shared.open(.requestApiToken(needBypass: false, callback: URL(string: "YOUR-APP-SCHEME:token-callback")))
+    await OrbotKit.shared.open(.requestApiToken(needBypass: false, callback: URL(string: "YOUR-APP-SCHEME:token-callback")))
     
-    // The scheme handler (in `AppDelegate`!):
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool
-    {
-        guard let urlc = URLComponents(url: url, resolvingAgainstBaseURL: true)
+    // The scheme handler (in `SceneDelegate`!):
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url,
+              let urlc = URLComponents(url: url, resolvingAgainstBaseURL: true)
         else {
-            return false
+            return
         }
 
         switch urlc.path {
@@ -134,10 +133,8 @@ If you want to receive the REST API token via callback, add this to your `Info.p
             break
 
         default:
-            return false
+            return
         }
-
-        return true
     }
 
 
@@ -150,49 +147,59 @@ If you want to receive the REST API token via callback, add this to your `Info.p
     OrbotKit.shared.session
 
     // Get status information:
-    OrbotKit.shared.info { info, error in
+    do {
+        let info = try await OrbotKit.shared.info()
+
+        print(info)
+        
+        // This is the only call, which will not provide an error, when the
+        // VPN is stopped. Instead `OrbotKit` will synthesize an appropriate answer.
+    }
+    catch {
         switch error {
-        case OrbotKit.Errors.httpError(403)?:
+        case OrbotKit.Errors.httpError(403):
             // TODO: Your access token is invalid. Delete the old one, 
             //       ask the user to get a new one, but don't be annoying about it!
 
-        case .some(let error):
-            print(error)
-
         default:
-            print(info)
-            
-            // This is the only call, which will not provide an error, when the
-            // VPN is stopped. Instead `OrbotKit` will synthesize an appropriate answer.
+            print(error)
         }
+    }
     }
 
     // Get circuit information for a specific host:
-    OrbotKit.shared.circuits(host: "torproject.org") { circuits, error in
+    do {
+        let circuits = try await OrbotKit.shared.circuits(host: "torproject.org")
+
+        print(circuits)
+
+        // Will be ordered by probability.
+        // If you ask for a onion service circuit, there will only be zero or one, 
+        // because that is easy to determine, but circuits for normal domains
+        // can only be a rough guess due to limitations of Tor.
+    }
+    catch {
         switch error {
-        case OrbotKit.Errors.httpError(403)?:
+        case OrbotKit.Errors.httpError(403):
             // TODO
 
-        case .some(let error):
-            print(error)
-
         default:
-            print(circuits)
-
-            // Will be ordered by probability.
-            // If you ask for a onion service circuit, there will only be zero or one, 
-            // because that is easy to determine, but circuits for normal domains
-            // can only be a rough guess due to limitations of Tor.
+            print(error)
         }
     }
 
     // Force-close a circuit with a specific ID: (will get the user a new IP)
-    OrbotKit.shared.closeCircuit(id: id) { success, error in
-        if case OrbotKit.Errors.httpError(403)? = error {
+    do {
+        let success = try await OrbotKit.shared.closeCircuit(id: id)
+
+        print("Circuit \(id): \(success ? "success" : "failure")")
+    }
+    catch {
+        if case OrbotKit.Errors.httpError(403) = error {
             // TODO
         }
 
-        print("Circuit \(id): \(error?.localizedDescription ?? (success ? "success" : "failure"))")
+        print("Circuit \(id): \(error.localizedDescription)")
     }
 
     // Register yourself for status change updates:     
@@ -232,7 +239,7 @@ OrbotKit is available through [Swift Package Manager](https://www.swift.org/pack
 it, simply add the following line to your `Package.swift`:
 
 ```swift
-dependencies: [.package(url: "https://github.com/guardianproject/orbotkit.git", from: "1.0.0")]
+dependencies: [.package(url: "https://github.com/guardianproject/orbotkit.git", from: "2.0.0")]
 ```
 
 ### Cocoapods
