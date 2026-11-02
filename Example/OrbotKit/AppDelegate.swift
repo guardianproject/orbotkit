@@ -11,41 +11,8 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        return true
-    }
-
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool
-    {
-        guard let urlc = URLComponents(url: url, resolvingAgainstBaseURL: true),
-              let navC = window?.rootViewController as? UINavigationController,
-              let vc = navC.viewControllers.first as? ViewController
-        else {
-            return false
-        }
-
-        switch urlc.path {
-        case "token-callback":
-            if let token = urlc.queryItems?.first(where: { $0.name == "token" })?.value {
-                vc.tokenAlert?.textFields?.first?.text = token
-            }
-
-            break
-
-        case "started":
-            vc.show("Called back after 'start'.")
-
-        case "stopped":
-            vc.show("Called back after 'stop'.")
-
-        default:
-            return false
-        }
-
         return true
     }
 }

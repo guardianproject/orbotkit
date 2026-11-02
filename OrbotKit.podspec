@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/guardianproject/orbotkit.git', :tag => s.version.to_s }
   s.social_media_url = 'https://chaos.social/@tla'
 
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '15.0'
 
   s.swift_versions = '5.0'
 
