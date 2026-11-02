@@ -309,11 +309,6 @@ open class OrbotKit {
     }
 
     /**
-     - parameter success: A Boolean value that indicates whether the operation completed successfully.
-     */
-    public typealias UICompletionHandler = ((_ success: Bool) -> Void)?
-
-    /**
      Link to the official Orbot app in the App Store.
      */
     public static let appStoreLink = URL(string: "itms-apps://apple.com/app/id1609461599")!
@@ -405,10 +400,11 @@ open class OrbotKit {
 
      - parameter command: The command to execute.
      - parameter fallback: If `.uiUrlType`is `.failover` and this is `true`, fall back to `.orbotScheme` usage.
-     - parameter completion: The block to execute when the operation finished.
-     This block is executed asynchronously on your app's main thread.
+     - returns: A Boolean value that indicates whether the operation completed successfully.
+
      */
-    open func open(_ command: UiCommand, fallback: Bool = false, _ completion: UICompletionHandler = nil) {
+    @discardableResult
+    open func open(_ command: UiCommand, fallback: Bool = false) async -> Bool {
         var uiUrlType = uiUrlType
 
         if case .failover = uiUrlType {
@@ -416,11 +412,7 @@ open class OrbotKit {
         }
 
         guard let url = command.url(for: uiUrlType) else {
-            DispatchQueue.main.async {
-                completion?(false)
-            }
-
-            return
+            return false
         }
 
         let options: [UIApplication.OpenExternalURLOptionsKey: Any]
@@ -432,16 +424,15 @@ open class OrbotKit {
             options = [:]
         }
 
-        UIApplication.shared.open(url, options: options) { success in
-            if case .failover = self.uiUrlType {
-                if !success && !fallback {
-                    // Try again with scheme handler, if no success and not fallback already.
-                    return self.open(command, fallback: true, completion)
-                }
-            }
+        let success = await UIApplication.shared.open(url, options: options)
 
-            completion?(success)
+        if case .failover = self.uiUrlType {
+            if !success && !fallback {
+                return await self.open(command, fallback: true)
+            }
         }
+
+        return success
     }
 
 
@@ -452,27 +443,27 @@ open class OrbotKit {
 
      If the Orbot VPN is not running, this will synthesize an answer, as it can't answer itself, obviously.
 
-     If this method returns with HTTP 403, you didn't provide a valid access token!
+     If this method throws with HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     - parameter completion: Returns an ``Info`` object on success or an `Error` object, never both. This block is executed on the `session.delegateQueue`.
-     - parameter info: Orbot status and metadata.
-     - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
+     - returns: Orbot status and metadata.
+     - throws: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
-    open func info(_ completion: @escaping (_ info: Info?, _ error: Error?) -> Void) {
-        request(.getInfo) { (info: Info?, error: Error?) in
-            var info = info
-            var error = error
-
-            if let nsError = error as? NSError {
-                if nsError.code == -1004 /* "Could not connect to the server." */ {
-                    info = Info(status: .stopped)
-                    error = nil
-                }
-            }
-
-            completion(info, error)
+    open func info() async throws -> Info? {
+        var info: Info?
+        do {
+            info = try await request(.getInfo)
         }
+        catch {
+            if (error as NSError).code == -1004 /* "Could not connect to the server." */ {
+                info = Info(status: .stopped)
+            }
+            else {
+                throw error
+            }
+        }
+
+        return info
     }
 
     /**
@@ -486,44 +477,38 @@ open class OrbotKit {
      If you do a request and ask for the circuits right afterwards, it's highly likely, that the first circuit in the returned list was used.
      The longer you wait, the wronger the answer will be.
 
-     If this method returns with HTTP 403, you didn't provide a valid access token!
+     If this method throws with HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     If Orbot isn't running, most likely`NSError.code == -1004` will be returned.
+     If Orbot isn't running, most likely`NSError.code == -1004` will be thrown.
 
      - parameter host: A host to filter answers by, to find the circuit which most likely was used for this request.
-     - parameter completion: Returns a list of ``TorCircuit`` objects on success or an `Error` object, never both. This block is executed on the `session.delegateQueue`.
-     - parameter circuits: A list of currently built ``TorCircuit``s used in non-internal requests.
-     - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
+     - returns: A list of currently built ``TorCircuit``s used in non-internal requests.
+     - throws: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
-    open func circuits(host: String? = nil, _ completion: @escaping (_ circuits: [TorCircuit]?, _ error: Error?) -> Void) {
-        request(.getCircuits(host: host), completion)
+    open func circuits(host: String? = nil) async throws -> [TorCircuit]? {
+        try await request(.getCircuits(host: host))
     }
 
     /**
      Tell Tor to close the circuit with the given ID.
 
-     If a circuit with that ID existed and was closed, `success` will be `true`.
-     If not, but everything else in the request was ok, a 404 HTTP error will be returned.
+     If a circuit with that ID existed and was closed, the method will return successfully.
+     If not, but everything else in the request was ok, a 404 HTTP error will be thrown.
 
-     If this method returns with HTTP 403, you didn't provide a valid access token!
+     If this method throws with HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     If Orbot isn't running, most likely `NSError.code == -1004` will be returned.
+     If Orbot isn't running, most likely `NSError.code == -1004` will be thrown.
 
      - parameter id: An identifier of a circuit which should be closed. (`TorCircuit.circuitId`)
-     - parameter completion: Returns a boolean indicating success or failure and possibly an `Error` object to explain the reason for failure. This block is executed on the `session.delegateQueue`.
-     - parameter success: `true` on success, `false` on failure.
-     - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
+     - returns: `true` on success, `false` on failure.
+     - throws: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
-    open func closeCircuit(id: String, _ completion: @escaping (_ success: Bool, _ error: Error?) -> Void) {
-        request(.closeCircuit(id: id)) { (_: TorCircuit? /* To satisfy Swift. Server returns nothing! */, error: Error?) in
-            if let error = error {
-                return completion(false, error)
-            }
+    open func closeCircuit(id: String) async throws -> Bool {
+        let _: TorCircuit? /* To satisfy Swift. Server returns nothing! */ = try await request(.closeCircuit(id: id))
 
-            completion(true, nil)
-        }
+        return true
     }
 
     /**
@@ -532,32 +517,27 @@ open class OrbotKit {
      Convenience wrapper for  ``closeCircuit(id:_:)``
 
      If a circuit with the same ID you provided existed and was closed, `success` will be `true`.
-     If not, but everything else in the request was ok, a 404 HTTP error will be returned.
+     If not, but everything else in the request was ok, a 404 HTTP error will be thrown.
 
-     If this method returns with HTTP 403, you didn't provide a valid access token!
+     If this method throws with HTTP 403, you didn't provide a valid access token!
      See ``UiCommand`` `.requestApiToken` on how to request a valid token.
 
-     If Orbot isn't running, most likely `NSError.code == -1004` will be returned.
+     If Orbot isn't running, most likely `NSError.code == -1004` will be thrown.
 
      - parameter circuit: An circuit which should be closed.
-     - parameter completion: Returns a boolean indicating success or failure and possibly an `Error` object to explain the reason for failure. This block is executed on the `session.delegateQueue`.
-     - parameter success: `true` on success, `false` on failure.
-     - parameter error: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
+     - returns: `true` on success, `false` on failure.
+     - throws: Any errors from `URLSession`, `JSONDecoder` or HTTP answers which are not in the 200 range. (See ``Errors``.)
      */
-    open func closeCircuit(circuit: TorCircuit, _ completion: @escaping (_ success: Bool, _ error: Error?) -> Void) {
+    open func closeCircuit(circuit: TorCircuit) async throws -> Bool {
         guard let id = circuit.circuitId, !id.isEmpty else {
-            session.delegateQueue.addOperation {
-                completion(false, nil)
-            }
-
-            return
+            return false
         }
 
-        closeCircuit(id: id, completion)
+        return try await closeCircuit(id: id)
     }
 
     private var statusChangeListeners = [() -> OrbotStatusChangeListener?]()
-    private var pollTask: URLSessionDataTask?
+    private var isPolling = false
 
     /**
      Informs the given listener, when the Orbot VPN status changes.
@@ -585,58 +565,44 @@ open class OrbotKit {
         statusChangeListeners.append({ [weak listener] in listener })
 
         // A background process was already started.
-        if pollTask != nil {
+        if isPolling {
             return
         }
 
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            let group = DispatchGroup()
+        isPolling = true
 
+        Task {
             var lastInfo: Info? = nil
             var reason: Error? = nil
 
             repeat {
                 // Only try 1 sec polls during death, so we can inform early, when it resurrects.
-                guard let timeout = lastInfo?.status != .started ? 2 : self?.session.configuration.timeoutIntervalForRequest else {
-                    break
-                }
-
-                group.enter()
+                let timeout = lastInfo?.status != .started ? 2 : session.configuration.timeoutIntervalForRequest
 
                 var info: Info?
 
-                self?.pollTask = self?.request(.poll(length: UInt32(timeout - 1))) {
-                    (i: Info?, error: Error?) in
-
+                do {
+                    info = try await request(.poll(length: UInt32(timeout - 1)), timeout: timeout)
+                }
+                catch {
                     // NSURLErrorDomain -1004: "Could not connect to the server." - currently not running.
-                    if let error = error as? NSError, error.code == -1004 {
+                    if (error as NSError).code == -1004 {
                         info = Info(status: .stopped)
                         // Ignore this one, but throttle a little.
-                        sleep(1)
+                        try? await Task.sleep(nanoseconds: 1 * NSEC_PER_SEC)
                     }
                     // NSURLErrorDomain -999: "cancelled" - ignore.
-                    else if let error = error as? NSError, error.code == -999 {
+                    else if (error as NSError).code == -999 {
                         // Ignore.
                     }
-                    else if let error = error {
+                    else {
                         reason = error
                     }
-                    else {
-                        // Fallback for Orbot 1.3.0, which responds with an empty body.
-                        info = i ?? Info(status: .started)
-                    }
-
-                    group.leave()
                 }
 
-                // Should not happen, but just to be extra safe.
-                if self?.pollTask == nil {
-                    group.leave()
-                }
-
-                if group.wait(timeout: .now() + timeout) == .timedOut {
-                    self?.pollTask?.cancel()
-                    self?.pollTask = nil
+                if info == nil {
+                    // Fallback for Orbot 1.3.0, which responds with an empty body.
+                    info = Info(status: .started)
                 }
 
                 // Don't call status change listeners the first time.
@@ -644,20 +610,19 @@ open class OrbotKit {
                     lastInfo = info
                 }
                 else if let info = info, lastInfo?.status != info.status {
-                    self?.statusChangeListeners.forEach {
+                    statusChangeListeners.forEach {
                         $0()?.orbotStatusChanged(info: info)
                     }
 
                     lastInfo = info
                 }
             }
-            while reason == nil && !(self?.statusChangeListeners.isEmpty ?? true)
+            while reason == nil && !statusChangeListeners.isEmpty
 
-            self?.statusChangeListeners.forEach { $0()?.statusChangeListeningStopped(error: reason ?? Errors.internalError) }
-            self?.statusChangeListeners.removeAll()
+            statusChangeListeners.forEach { $0()?.statusChangeListeningStopped(error: reason ?? Errors.internalError) }
+            statusChangeListeners.removeAll()
 
-            self?.pollTask?.cancel()
-            self?.pollTask = nil
+            isPolling = false
         }
     }
 
@@ -675,10 +640,6 @@ open class OrbotKit {
         else {
             statusChangeListeners.removeAll { $0() === listener }
         }
-
-        if statusChangeListeners.isEmpty {
-            pollTask?.cancel()
-        }
     }
 
 
@@ -688,55 +649,49 @@ open class OrbotKit {
      Query a given ``RestEndpoint``, JSON-decode the result and return it or any errors happening.
 
      - parameter endpoint: The endpoint to query.
-     - parameter completion: Returns the expected value or  an `Error` object, never both. This block is executed on the `session.delegateQueue`.
+     - returns: the expected value.
      */
-    @discardableResult
-    private func request<T: Decodable>(_ endpoint: RestEndpoint, _ completion: @escaping (T?, Error?) -> Void) -> URLSessionDataTask? {
+    private func request<T: Decodable>(_ endpoint: RestEndpoint, timeout: TimeInterval? = nil) async throws -> T? {
         guard let request = endpoint.request else {
-            session.delegateQueue.addOperation {
-                completion(nil, Errors.internalError)
-            }
-
-            return nil
+            throw Errors.internalError
         }
 
-        let task = session.dataTask(with: request) { data, response, error in
-            if let error = error {
-                return completion(nil, error)
-            }
+        let session: URLSession
 
-            guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
-                return completion(nil, Errors.internalError)
-            }
+        if let timeout, timeout != self.session.configuration.timeoutIntervalForRequest {
+            let conf = self.session.configuration
+            conf.timeoutIntervalForRequest = timeout
 
-            if statusCode < 200 || statusCode >= 300 {
-                if statusCode == 403 {
-                    self.apiToken = nil // This token is invalid.
-                }
-
-                return completion(nil, Errors.httpError(statusCode: statusCode))
-            }
-
-            let payload: T?
-
-            if let data = data, data.count > 0 {
-                do {
-                    payload = try self.decoder.decode(T.self, from: data)
-                }
-                catch {
-                    return completion(nil, error)
-                }
-            }
-            else {
-                payload = nil
-            }
-
-            completion(payload, nil)
+            session = URLSession(configuration: conf)
+        }
+        else {
+            session = self.session
         }
 
-        task.resume()
+        let (data, response) = try await session.data(for: request)
 
-        return task
+        guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
+            throw Errors.internalError
+        }
+
+        if statusCode < 200 || statusCode >= 300 {
+            if statusCode == 403 {
+                self.apiToken = nil // This token is invalid.
+            }
+
+            throw Errors.httpError(statusCode: statusCode)
+        }
+
+        let payload: T?
+
+        if data.count > 0 {
+            payload = try self.decoder.decode(T.self, from: data)
+        }
+        else {
+            payload = nil
+        }
+
+        return payload
     }
 
     /**

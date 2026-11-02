@@ -137,63 +137,65 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         case 1:
             switch indexPath.row {
             case 0:
-                OrbotKit.shared.open(.show) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.show) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 1:
-                OrbotKit.shared.open(.start(callback: URL(string: "orbotkit-example:started"))) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.start(callback: URL(string: "orbotkit-example:started"))) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 2:
 //                let token = OrbotKit.shared.apiToken ?? ""
                 guard let token = OrbotKit.shared.apiToken else {
-                    return self.show("Cannot stop without authorization token!", "Error")
+                    return show("Cannot stop without authorization token!", "Error")
                 }
 
-                OrbotKit.shared.open(.stop(token: token, callback: URL(string: "orbotkit-example:stopped"))) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.stop(token: token, callback: URL(string: "orbotkit-example:stopped"))) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 3:
-                OrbotKit.shared.open(.settings) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.settings) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 4:
-                OrbotKit.shared.open(.bridges) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.bridges) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 5:
-                OrbotKit.shared.open(.auth) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.auth) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             case 6:
-                OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678")) { success in
-                    if !success {
-                        self.show("Link could not be opened!", "Error")
+                Task {
+                    if await !OrbotKit.shared.open(.addAuth(url: "http://example23472834zasd.onion", key: "12345678examplekey12345678")) {
+                        show("Link could not be opened!", "Error")
                     }
                 }
 
             default:
-                OrbotKit.shared.open(.requestApiToken(needBypass: true, callback: URL(string: "orbotkit-example:token-callback"))) { success in
+                Task {
+                    let success = await OrbotKit.shared.open(.requestApiToken(needBypass: true, callback: URL(string: "orbotkit-example:token-callback")))
+
                     if !success {
-                        return self.show("Link could not be opened!", "Error")
+                        return show("Link could not be opened!", "Error")
                     }
 
                     let alert = UIAlertController(title: "Access Token", message: nil, preferredStyle: .alert)
@@ -214,109 +216,125 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                         self.tokenAlert = nil
                     })
 
-                    self.present(alert, animated: false)
+                    present(alert, animated: false)
 
-                    self.tokenAlert = alert
+                    tokenAlert = alert
                 }
             }
         default:
             switch indexPath.row {
             case 0:
-                OrbotKit.shared.info { info, error in
-                    switch error {
-                    case OrbotKit.Errors.httpError(403)?:
-                        self.reloadSections()
+                Task {
+                    do {
+                        let info = try await OrbotKit.shared.info()
 
-                    case .some(let error):
-                        print(error)
+                        show(info.debugDescription)
+                    }
+                    catch {
+                        switch error {
+                        case OrbotKit.Errors.httpError(403):
+                            reloadSections()
 
-                        self.show(error.localizedDescription, "Error")
+                        default:
+                            print(error)
 
-                    default:
-                        self.show(info.debugDescription)
+                            show(error.localizedDescription, "Error")
+                        }
                     }
                 }
 
             case 1:
-                let task = OrbotKit.shared.session.dataTask(with: URL(string: "https://torproject.org")!) { data, response, error in
-                    if let error = error {
-                        return self.show(error.localizedDescription, "Error")
+                let host = "torproject.org"
+
+                Task {
+                    do {
+                        _ = try await OrbotKit.shared.session.data(from: URL(string: "https://\(host)")!)
+                    }
+                    catch {
+                        return show(error.localizedDescription, "Error")
                     }
 
-                    OrbotKit.shared.circuits(host: "torproject.org") { circuits, error in
+                    do {
+                        let circuits = try await OrbotKit.shared.circuits(host: host)
+
+                        lastCircuits = circuits ?? []
+
+                        show(lastCircuits.debugDescription)
+
+                    }
+                    catch {
                         switch error {
-                        case OrbotKit.Errors.httpError(403)?:
-                            self.reloadSections()
-
-                        case .some(let error):
-                            print(error)
-
-                            self.show(error.localizedDescription, "Error")
+                        case OrbotKit.Errors.httpError(403):
+                            reloadSections()
 
                         default:
-                            self.lastCircuits = circuits ?? []
+                            print(error)
 
-                            self.show(self.lastCircuits.debugDescription)
+                            show(error.localizedDescription, "Error")
                         }
                     }
                 }
-                task.resume()
 
             case 2:
-                let task = OrbotKit.shared.session.dataTask(with: URL(string: "http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion")!)
-                { data, response, error in
-                    if let error = error {
-                        return self.show(error.localizedDescription, "Error")
+                let host = "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion"
+
+                Task {
+                    do {
+                        _ = try await OrbotKit.shared.session.data(from: URL(string: "http://\(host)")!)
+                    }
+                    catch {
+                        return show(error.localizedDescription, "Error")
                     }
 
-                    OrbotKit.shared.circuits(host: "2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion") { circuits, error in
+                    do {
+                        let circuits = try await OrbotKit.shared.circuits(host: host)
+
+                        lastCircuits = circuits ?? []
+
+                        show(lastCircuits.debugDescription)
+                    }
+                    catch {
                         switch error {
-                        case OrbotKit.Errors.httpError(403)?:
-                            self.reloadSections()
-
-                        case .some(let error):
-                            print(error)
-
-                            self.show(error.localizedDescription, "Error")
+                        case OrbotKit.Errors.httpError(403):
+                            reloadSections()
 
                         default:
-                            self.lastCircuits = circuits ?? []
+                            print(error)
 
-                            self.show(self.lastCircuits.debugDescription)
+                            show(error.localizedDescription, "Error")
                         }
                     }
                 }
-                task.resume()
 
             case 3:
-                let group = DispatchGroup()
                 var results = [String]()
 
                 guard !lastCircuits.isEmpty else {
                     return show("No circuits to close, yet. Query some, first!", "Error")
                 }
 
-                for circuit in lastCircuits {
-                    guard let id = circuit.circuitId, !id.isEmpty else {
-                        continue
-                    }
-
-                    group.enter()
-
-                    OrbotKit.shared.closeCircuit(id: id) { success, error in
-                        if case OrbotKit.Errors.httpError(403)? = error {
-                            self.reloadSections()
+                Task {
+                    for circuit in lastCircuits {
+                        guard let id = circuit.circuitId, !id.isEmpty else {
+                            continue
                         }
 
-                        results.append("Circuit \(id): \(error?.localizedDescription ?? (success ? "success" : "failure"))")
+                        do {
+                            let success = try await OrbotKit.shared.closeCircuit(id: id)
 
-                        group.leave()
+                            results.append("Circuit \(id): \(success ? "success" : "failure")")
+                        }
+                        catch {
+                            if case OrbotKit.Errors.httpError(403) = error {
+                                reloadSections()
+                            }
+
+                            results.append("Circuit \(id): \(error.localizedDescription)")
+                        }
                     }
+
+                    show(results.joined(separator: "\n\n"))
                 }
-
-                group.wait()
-
-                show(results.joined(separator: "\n\n"))
 
             default:
                 let cell = tableView.cellForRow(at: indexPath)
@@ -345,15 +363,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
 
     func statusChangeListeningStopped(error: Error) {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.tableView?.cellForRow(at: IndexPath(row: 4, section: 2))?.accessoryType = .none
-        }
 
-        if case OrbotKit.Errors.httpError(403) = error {
-            reloadSections()
-        }
+            if case OrbotKit.Errors.httpError(403) = error {
+                reloadSections()
+            }
 
-        show("Error while listening for status changes:\n\n\(error)", "Error")
+            show("Error while listening for status changes:\n\n\(error)", "Error")
+        }
     }
 
 
@@ -381,16 +399,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     // MARK: Public Methods
 
+    @MainActor
     func show(_ message: String, _ title: String = "Result") {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
 
-            self.present(alert, animated: true)
-        }
+        present(alert, animated: true)
     }
 
+    @MainActor
     func reloadSections() {
         var rows = [IndexPath(row: 2, section: 1)]
 
@@ -400,9 +418,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
         }
 
-        DispatchQueue.main.async {
-            self.tableView?.reloadRows(at: rows, with: .fade)
-        }
+        self.tableView?.reloadRows(at: rows, with: .fade)
     }
 
     func enable(_ cell: UITableViewCell, _ toggle: Bool) {

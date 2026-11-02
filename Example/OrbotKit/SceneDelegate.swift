@@ -38,7 +38,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         default:
             return
         }
-
-        return
     }
 }
